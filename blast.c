@@ -63,6 +63,8 @@ int main(int argc, char **argv)
 			exit(1);
 		}
 
+		destroy_msg(test_msg);
+
 		sleep(1);
 	}
 }
