@@ -4,6 +4,15 @@
 #include <time.h>
 #include <string.h>
 
+typedef double (*sensor_function)(void);
+
+/* sensor interface structure */
+typedef struct {
+	char *label;
+	char *unit;
+	sensor_function update;
+} sensor;
+
 /* data structure for client -> server comms */
 typedef struct {
 	char *label;

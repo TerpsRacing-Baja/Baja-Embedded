@@ -12,6 +12,8 @@ int main(int argc, char **argv)
 	int sock;
         struct sockaddr_in server;
 	data_msg test_msg;
+	int num;
+	sensor **sensor_key;
 
 	/* read pin config from file */
 		// should account for multiplex channel - make helper functions
@@ -39,16 +41,19 @@ int main(int argc, char **argv)
 
 	/* data collection loop */
 	for (;;) {
-		test_msg = build_msg("Test Data", "Testies/Test", time(NULL), 69);
 
-		if (send_msg(sock, test_msg) < 0) {
-			perror("guru meditation");
-			close(sock);
-			exit(1);
+		for (int i = 0; i < num; ++i) {
+			test_msg = build_msg(sensor_key[i]->label,
+				sensor_key[i]->unit, time(NULL),
+				sensor_key[i]->update());
+
+			if (send_msg(sock, test_msg) < 0) {
+				perror("guru meditation");
+				close(sock);
+				exit(1);
+			}
+
+			destroy_msg(test_msg);
 		}
-
-		destroy_msg(test_msg);
-
-		sleep(1);
 	}
 }
