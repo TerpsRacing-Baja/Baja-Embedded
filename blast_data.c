@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/socket.h>
 #include "include/blast_data.h"
 
 data_msg build_msg(const char *label, const char *unit, time_t timestamp, double data)
@@ -31,4 +32,19 @@ char *stringify_msg(data_msg new_msg)
         snprintf(msg_string, 128, "%s|%s|%i|%lf", new_msg.label, new_msg.unit, new_msg.timestamp, new_msg.data);
         
         return msg_string;
+}
+
+int send_msg(int sock, data_msg msg)
+{
+        char *msg_string;
+
+        msg_string = stringify_msg(msg);
+
+        if (send(sock, msg_string, strlen(msg_string), 0) < 0) {
+                free(msg_string);
+                return -1;
+        }
+
+        free(msg_string);
+        return 0;
 }

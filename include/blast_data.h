@@ -23,5 +23,7 @@ void destroy_msg(data_msg msg);
    takes a data_msg struct and returns a char pointer. */
 char *stringify_msg(data_msg new_msg);
 
+/* given a data_msg and a socket, send it to the server (: */
+int send_msg(int sock, data_msg msg);
 
 #endif

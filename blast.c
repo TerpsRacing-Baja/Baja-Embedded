@@ -7,22 +7,6 @@
 //#include <mraa.h>
 #include "include/blast_data.h"
 
-int send_msg(int sock, data_msg msg)
-{
-        char *msg_string;
-
-        msg_string = stringify_msg(msg);
-
-        if (send(sock, msg_string, strlen(msg_string), 0) < 0) {
-                free(msg_string);
-                return -1;
-        }
-
-        free(msg_string);
-        return 0;
-}
-
-
 int main(int argc, char **argv)
 {
 	int sock;
