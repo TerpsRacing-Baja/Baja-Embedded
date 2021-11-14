@@ -11,7 +11,6 @@ int main(int argc, char **argv)
 {
 	int sock;
         struct sockaddr_in server;
-	data_msg test_msg;
 	int num;
 	sensor **sensor_key;
 
@@ -41,19 +40,29 @@ int main(int argc, char **argv)
 
 	/* data collection loop */
 	for (;;) {
-
 		for (int i = 0; i < num; ++i) {
-			test_msg = build_msg(sensor_key[i]->label,
-				sensor_key[i]->unit, time(NULL),
-				sensor_key[i]->update());
+			data_msg test_msg;
+			double *update_data = malloc(sizeof(double));
 
-			if (send_msg(sock, test_msg) < 0) {
-				perror("guru meditation");
-				close(sock);
-				exit(1);
+			if (sensor_key[i]->update(update_data) < 0) {
+				printf("Sensor %s failed on update\n", sensor_key[i]->label);
+			}
+			else {
+				test_msg = build_msg(sensor_key[i]->label,
+					sensor_key[i]->unit, time(NULL),
+					*update_data);
+
+				if (send_msg(sock, test_msg) < 0) {
+					perror("guru meditation");
+					close(sock);
+					destroy_msg(test_msg);
+					exit(1);
+				}
+
+				destroy_msg(test_msg);
 			}
 
-			destroy_msg(test_msg);
+			free(update_data);
 		}
 	}
 }

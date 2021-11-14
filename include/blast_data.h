@@ -4,7 +4,7 @@
 #include <time.h>
 #include <string.h>
 
-typedef double (*sensor_function)(void);
+typedef double (*sensor_function)(double *);
 
 /* sensor interface structure */
 typedef struct {
