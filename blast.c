@@ -56,6 +56,7 @@ int main(int argc, char **argv)
 					perror("guru meditation");
 					close(sock);
 					destroy_msg(test_msg);
+					free(update_data);
 					exit(1);
 				}
 
