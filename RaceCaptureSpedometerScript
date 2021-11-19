@@ -1,0 +1,131 @@
+data =  0
+setTickRate(1000)
+--startLogging()
+initSer(1)
+id = addChannel("X-Speed", 200, 0, 120)
+
+toggle = 0
+a_x = 0; a_y = 0; a_z = 0;
+initial = getTickCount()
+calibrateImuZero()
+a_x0 = getImu(0)
+ a_y0 = getImu(1)
+ a_z0 = getImu(2)
+
+cutoff = 0.02
+
+vx = 0
+vy = 0
+vz = 0
+a_time = 0
+b_time = 0
+dt = 0
+
+function  onTick()
+
+if getButton() then
+ initial = getTickCount()
+ vx = 0
+ calibrateImuZero()
+ a_x0 = getImu(0)
+  a_y0 = getImu(1)
+  a_z0 = getImu(2)
+ print("calibrating\n")
+end
+
+
+
+
+ data  =  getImu(4)
+ a_x = getImu(0) - a_x0
+ a_y = getImu(1) - a_y0
+ a_z = getImu(2) - a_z0
+
+if toggle == 0 then
+ a_time = (getTickCount() - initial) - b_time
+ b_time = (getTickCount() - initial) - a_time
+current = a_time
+else
+ a_time = (getTickCount() - initial) - b_time
+ b_time = (getTickCount() - initial) - a_time
+ current = b_time
+end
+ 
+ 
+
+
+
+ dt = 1
+
+
+if (a_x > 0.15) or (a_x < -0.15) then
+dvx = (dt / 1000) * (a_x * 32.2)
+vx = vx + dvx
+else
+vx = 0
+end
+
+if (a_y > 0.15) or (a_y < -0.15) then
+dvy = (dt / 1000) * (a_y * 32.2)
+vy = vy + dvy
+else
+vy = 0
+end
+
+if (a_z > 0.15) or (a_z < -0.15) then
+dvz = (dt / 1000) * (a_z * 32.2)
+vz = vz + dvz
+else
+vz = 0
+end
+
+vector = math.sqrt(vx * vx + vy * vy)
+vector = vector / 1.467
+
+
+ setChannel(id, vector)
+
+  print(vector)
+
+  print(" ")
+
+
+  print(a_x)
+
+  print(" ")
+
+
+  print(a_y)
+
+  print(" ")
+
+print(a_z)
+
+  print(" ")
+
+  print((dt/1000))
+
+print(" GPS: ")
+
+  print(getGpsSats())
+
+
+
+
+
+
+print(" GPS SPEED: ")
+
+  print(getGpsSpeed())
+
+
+
+print(" GPS Qual: ")
+
+  print(getGpsQuality())
+
+
+
+print("\n")
+ --println("log:  "  ..data)
+end
