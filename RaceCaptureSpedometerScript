@@ -85,27 +85,25 @@ vector = vector / 1.467
 
  setChannel(id, vector)
 
-  print(vector)
-
-  print(" ")
-
-
-  print(a_x)
-
-  print(" ")
+  
+  print(" GPS TIME: ")
 
 
-  print(a_y)
+  print(getGpsSec())
+ 
 
-  print(" ")
+  
+print(" GPS Dist: ")
 
-print(a_z)
+  print(getGpsDist())
 
-  print(" ")
 
-  print((dt/1000))
 
-print(" GPS: ")
+  print(" GPS POS: ")
+
+  print(getGpsPos())
+
+print(" GPS SATS: ")
 
   print(getGpsSats())
 
