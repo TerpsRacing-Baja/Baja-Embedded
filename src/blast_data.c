@@ -4,6 +4,27 @@
 #include <sys/socket.h>
 #include "include/blast_data.h"
 
+sensor *build_sensor(char *label, char *unit, sensor_function update)
+{
+	sensor *new_sensor = malloc(sizeof(sensor));
+	new_sensor->label = malloc(strlen(label));
+	strcpy(new_sensor->label, label);
+	new_sensor->unit = malloc(strlen(unit));
+	strcpy(new_sensor->unit, unit);
+	new_sensor->update = update;
+
+	return new_sensor;
+}
+
+void destroy_sensor(sensor *sensor)
+{
+	free(sensor->label);
+	free(sensor->unit);
+	free(sensor);
+
+	return;
+}
+
 data_msg build_msg(const char *label, const char *unit, unsigned long long timestamp, double data)
 {
 	data_msg msg;

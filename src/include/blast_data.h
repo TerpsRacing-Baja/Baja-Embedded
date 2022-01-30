@@ -21,6 +21,12 @@ typedef struct {
 	double data;
 } data_msg;
 
+/* build a new sensor */
+sensor *build_sensor(char *label, char *unit, sensor_function update);
+
+/* destroy a sensor */
+void destroy_sensor(sensor *sensor);
+
 /* load all information for a single data point into a message structure */
 data_msg build_msg(const char *label, const char *unit,
 		   unsigned long long timestamp, double data);

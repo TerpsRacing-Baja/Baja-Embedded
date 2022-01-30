@@ -7,11 +7,10 @@
 #include <sys/time.h>
 //#include <mraa.h>
 #include "include/blast_data.h"
+#include "include/sensors.h"
 
-/*
- * TODO:
+/** TODO:
  * connection failsafes (filtered by signal type)
- * finalize sensor interface
  * 
  */
 
@@ -29,6 +28,11 @@ int main(int argc, char **argv)
 	/* mraa/pin configuration (for gpio and aio) */
 
 	srand(time(NULL));	// random seed for dummy data
+
+	/* set test config for dummy sensor */
+	sensor_key = malloc(sizeof(sensor));
+	sensor_key[0] = build_sensor("Test Sensor", "Testies", test_sensor);
+	num = 1;
 
         /* socket creation and server addressing */
         if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
@@ -52,32 +56,32 @@ int main(int argc, char **argv)
 
 	/* data collection loop */
 	for (;;) {
-		//for (int i = 0; i < num; ++i) {
+		for (int i = 0; i < num; ++i) {
 			data_msg test_msg;
-			/*double *update_data = malloc(sizeof(double));
+			double *update_data = malloc(sizeof(double));
 
 			if (sensor_key[i]->update(update_data) < 0) {
 				printf("Sensor %s failed on update\n", sensor_key[i]->label);
-			}
-			else {*/
+			} else {
 				gettimeofday(&tp, NULL);
-				test_msg = build_msg("TEST",
-					"TESTIES", (tp.tv_sec * 1000 + tp.tv_usec / 1000),
-					20.00 + (rand() / (RAND_MAX / 60)));
+				test_msg = build_msg(sensor_key[i]->label,
+					sensor_key[i]->unit,
+					(tp.tv_sec * 1000 + tp.tv_usec / 1000),
+					*update_data);
 
 				if (send_msg(sock, test_msg) < 0) {
 					perror("guru meditation");
 					close(sock);
 					destroy_msg(test_msg);
-					//free(update_data);
+					free(update_data);
 					exit(1);
 				}
 
 				destroy_msg(test_msg);
 				sleep(1);
-			//}
+			}
 
-			//free(update_data);
-		//}
+			free(update_data);
+		}
 	}
 }
