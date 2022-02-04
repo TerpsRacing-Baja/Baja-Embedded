@@ -3,6 +3,7 @@ setTickRate(1000)
 --startLogging()
 initSer(1)
 id = addChannel("X-Speed", 200, 0, 120)
+gps_id = addChannel("_GPS_SPEED", 10, 1, 0, 60)
 
 toggle = 0
 a_x = 0; a_y = 0; a_z = 0;
@@ -113,8 +114,9 @@ print(" GPS SATS: ")
 
 
 print(" GPS SPEED: ")
-
-  print(getGpsSpeed())
+gps_speed = getGpsSpeed()
+  print(gps_speed)
+setChannel(gps_id, gps_speed)
 
 
 
