@@ -3,15 +3,30 @@
 #include <string.h>
 #include <sys/socket.h>
 #include "include/blast_data.h"
+#include "include/initialize.h"
 
-sensor *build_sensor(char *label, char *unit, sensor_function update)
+sensor *build_sensor(char *label, char *unit, sensor_function update, sensor_type type, unsigned int pin)
 {
 	sensor *new_sensor = malloc(sizeof(sensor));
 	new_sensor->label = malloc(strlen(label));
 	strcpy(new_sensor->label, label);
 	new_sensor->unit = malloc(strlen(unit));
 	strcpy(new_sensor->unit, unit);
+
 	new_sensor->update = update;
+
+	new_sensor->type = type;
+
+	switch (type) {
+	case AIO:
+		init_aio((mraa_aio_context)new_sensor->context, pin);
+		break;
+	case GPIO:
+		init_gpio((mraa_gpio_context)new_sensor->context, pin);
+		break;
+	case I2C:
+		/* implement later */
+	}
 
 	return new_sensor;
 }
@@ -20,6 +35,18 @@ void destroy_sensor(sensor *sensor)
 {
 	free(sensor->label);
 	free(sensor->unit);
+
+	switch (sensor->type) {
+	case AIO:
+		mraa_aio_close((mraa_aio_context)sensor->context);
+		break;
+	case GPIO:
+		mraa_gpio_close((mraa_gpio_context)sensor->context);
+		break;
+	case I2C:
+		/* implement later */
+	}
+
 	free(sensor);
 
 	return;

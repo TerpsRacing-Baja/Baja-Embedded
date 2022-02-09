@@ -3,14 +3,24 @@
 
 #include <time.h>
 #include <string.h>
+#include <mraa.h>
 
 typedef int (*sensor_function)(double *);
+
+typedef enum {
+	AIO,
+	GPIO,
+	I2C,
+	TEST
+} sensor_type;
 
 /* sensor interface structure */
 typedef struct {
 	char *label;
 	char *unit;
 	sensor_function update;
+	sensor_type type;
+	void *context;
 } sensor;
 
 /* data structure for client -> server comms */
@@ -22,7 +32,7 @@ typedef struct {
 } data_msg;
 
 /* build a new sensor */
-sensor *build_sensor(char *label, char *unit, sensor_function update);
+sensor *build_sensor(char *label, char *unit, sensor_function update, sensor_type type, unsigned int pin);
 
 /* destroy a sensor */
 void destroy_sensor(sensor *sensor);

@@ -5,12 +5,19 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/time.h>
-//#include <mraa.h>
+#include <mraa.h>
 #include "include/blast_data.h"
 #include "include/sensors.h"
 
 /** TODO:
+ * receive return message from server upon connection (config)
+ * 
  * connection failsafes (filtered by signal type)
+ * implement mraa lib
+ * 	-> futz with pressure sensor
+ * compiler debug flags
+ * 
+ * work w/ cap on why reconnect sometimes fails
  * 
  */
 
@@ -26,13 +33,12 @@ int main(int argc, char **argv)
 		// pin/datatype struct? could embed in datapoint struct
 
 	/* mraa/pin configuration (for gpio and aio) */
-
-	srand(time(NULL));	// random seed for dummy data
-
+	
 	/* set test config for dummy sensor */
-	sensor_key = malloc(sizeof(sensor));
-	sensor_key[0] = build_sensor("Test Sensor", "Testies", test_sensor);
-	num = 1;
+	sensor_key = malloc(sizeof(sensor) * 2);
+	sensor_key[0] = build_sensor("Test Sensor", "Testies", test_sensor, TEST, 0);
+	sensor_key[1] = build_sensor("FPS Pressure Sensor", "Pascals", fps_v2_range_5v, AIO, 0);
+	num = 2;
 
         /* socket creation and server addressing */
         if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
@@ -74,6 +80,12 @@ int main(int argc, char **argv)
 					close(sock);
 					destroy_msg(test_msg);
 					free(update_data);
+
+					/* destroy sensors */
+					for (int i = 0; i < num; ++i) {
+						destroy_sensor(sensor_key[i]);
+					}
+
 					exit(1);
 				}
 
