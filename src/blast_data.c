@@ -52,6 +52,65 @@ void destroy_sensor(sensor *sensor)
 	return;
 }
 
+sensor search_sensor(char *name)
+{
+	int i = 0;
+
+	while (sensor_table[i].label != NULL) {
+		if (strcmp(name, sensor_table[i].label) == 0) {
+			return sensor_table[i];
+		}
+
+		++i;
+	}
+	return sensor_table[i];
+}
+
+/* figure out how to do this smartly. sscanf() will probably be easiest but
+it won't be efficient. temporarily partition each line and use indices to
+mark strings? */
+int configure_sensors(char *config, sensor ***sensor_key)
+{
+	char *line = config;
+	int i = 0;
+	int sensor_count = 0;
+
+	/* number of lines = number of sensors */
+	while (*(line + (sizeof(char) * i)) != '\0') {
+		if (*(line + (sizeof(char) * i)) == '\n') {
+			++sensor_count;
+		}
+
+		++i;
+	}
+
+	/* initialize sensor key */
+	*sensor_key = malloc(sizeof(sensor *) * sensor_count);
+
+	/* string | string | enum | integer */
+	for (i = 0; i < sensor_count; ++i) {
+		char *name = line;
+		char *name_end;
+		int pin;
+		sensor temp_sensor;
+		char *next_line = strchr(line, '\n');
+		*next_line = '\0';
+
+		name_end = strchr(line, '|');
+		*name_end = '\0';
+		pin = atoi(name_end + (sizeof(char) * 1));
+
+		temp_sensor = search_sensor(name);
+
+		(*sensor_key)[i] = build_sensor(name, temp_sensor.unit,
+			temp_sensor.update, temp_sensor.type, pin);
+
+		line = next_line + (sizeof(char) * 1);
+	}
+
+	return sensor_count;	
+}
+
 data_msg build_msg(const char *label, const char *unit, unsigned long long timestamp, double data)
 {
 	data_msg msg;

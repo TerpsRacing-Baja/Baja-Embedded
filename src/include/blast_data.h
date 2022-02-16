@@ -31,11 +31,20 @@ typedef struct {
 	double data;
 } data_msg;
 
+/* table of sensor configs */
+extern sensor sensor_table[];
+
 /* build a new sensor */
 sensor *build_sensor(char *label, char *unit, sensor_function update, sensor_type type, unsigned int pin);
 
 /* destroy a sensor */
 void destroy_sensor(sensor *sensor);
+
+/* search for a sensor in the sensor config table */
+sensor search_sensor(char *name);
+
+/* configure all sensors and return number of configured sensors */
+int configure_sensors(char *config, sensor ***sensor_key);
 
 /* load all information for a single data point into a message structure */
 data_msg build_msg(const char *label, const char *unit,

@@ -15,30 +15,16 @@
  * connection failsafes (filtered by signal type)
  * implement mraa lib
  * 	-> futz with pressure sensor
- * compiler debug flags
- * 
- * work w/ cap on why reconnect sometimes fails
  * 
  */
 
 int main(int argc, char **argv)
 {
-	int sock;
-        struct sockaddr_in server;
-	int num;
-	sensor **sensor_key;
-
-	/* read pin config from file */
-		// should account for multiplex channel - make helper functions
-		// pin/datatype struct? could embed in datapoint struct
-
-	/* mraa/pin configuration (for gpio and aio) */
-	
-	/* set test config for dummy sensor */
-	sensor_key = malloc(sizeof(sensor) * 2);
-	sensor_key[0] = build_sensor("Test Sensor", "Testies", test_sensor, TEST, 0);
-	sensor_key[1] = build_sensor("FPS Pressure Sensor", "Pascals", fps_v2_range_5v, AIO, 0);
-	num = 2;
+	int sock;			// socket for connection to server
+        struct sockaddr_in server;	// server address
+	int num;			// number of configured sensors
+	sensor **sensor_key;		// array of sensor interfaces
+	char *config;			// buffer holding config information
 
         /* socket creation and server addressing */
         if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
@@ -57,6 +43,22 @@ int main(int argc, char **argv)
                 close(sock);
                 exit(1);
         }
+
+	/* receive configuration data from server */
+	config = malloc(5096);
+	for (int recvd_msg_size = 0; recvd_msg_size < (5096 - 1); ++recvd_msg_size) {
+		if (recv(sock, config + recvd_msg_size, 1, 0) < 0) {
+			perror("guru meditation");
+			exit(1);
+		}
+
+                if (*(config + recvd_msg_size) == '&') {
+                        *(config + recvd_msg_size) = '\0';
+                        break;
+                }
+        }
+
+	num = configure_sensors(config, &sensor_key);
 
 	struct timeval tp;
 
