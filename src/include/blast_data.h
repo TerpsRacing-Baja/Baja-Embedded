@@ -5,8 +5,15 @@
 #include <string.h>
 #include <mraa.h>
 
+/**
+ * opaque definition of a pointer to a sensor update function.
+ */
 typedef int (*sensor_function)(double *);
 
+/**
+ * enumeration describing possible sensor types.
+ * analog, digital i/o, i2c, and test types are available.
+ */
 typedef enum {
 	AIO,
 	GPIO,
@@ -14,7 +21,10 @@ typedef enum {
 	TEST
 } sensor_type;
 
-/* sensor interface structure */
+/**
+ * opaque structure describing a sensor interface.
+ * sensors have a label, a unit, an update function, a type, and a pin context.
+ */
 typedef struct {
 	char *label;
 	char *unit;
@@ -23,7 +33,10 @@ typedef struct {
 	void *context;
 } sensor;
 
-/* data structure for client -> server comms */
+/**
+ * opaque structure describing a message sent to the blast server.
+ * messages have a label, a unit, a timestamp, and some data.
+ */
 typedef struct {
 	char *label;
 	char *unit;
@@ -31,33 +44,53 @@ typedef struct {
 	double data;
 } data_msg;
 
-/* table of sensor configs */
+/**
+ * a table of hardcoded sensor configurations, used to match a label to its
+ * units, type, and update function in dynamic configuration. 
+ */
 extern sensor sensor_table[];
 
-/* build a new sensor */
+/**
+ * allocate memory for a sensor given its components.
+ */
 sensor *build_sensor(char *label, char *unit, sensor_function update, sensor_type type, unsigned int pin);
 
-/* destroy a sensor */
+/**
+ * deallocate a sensor and its components.
+ */
 void destroy_sensor(sensor *sensor);
 
-/* search for a sensor in the sensor config table */
-sensor search_sensor(char *name);
+/**
+ * search for a label in the sensor table.
+ */
+sensor search_sensor(char *label);
 
-/* configure all sensors and return number of configured sensors */
+/**
+ * given a dynamic configuration string and the address of the sensor key,
+ * build and configure all sensors on the car.
+ */
 int configure_sensors(char *config, sensor ***sensor_key);
 
-/* load all information for a single data point into a message structure */
+/**
+ *  load all information for a single data point into a message structure.
+ */
 data_msg build_msg(const char *label, const char *unit,
 		   unsigned long long timestamp, double data);
 
-/* free the char pointers in a given data message */
+/**
+ *  free the char pointers in a given data message.
+ */
 void destroy_msg(data_msg msg);
 
-/* convert data_msg structure into ANSI string for transfer.
-   takes a data_msg struct and returns a char pointer. */
+/**
+ * convert data_msg structure into ANSI string for transfer.
+ * takes a data_msg struct and returns a char pointer.
+ */
 char *stringify_msg(data_msg new_msg);
 
-/* given a data_msg and a socket, send it to the server (: */
+/**
+ * given a data_msg and a socket, send it to the server
+ */
 int send_msg(int sock, data_msg msg);
 
 #endif

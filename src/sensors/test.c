@@ -1,10 +1,7 @@
 #include "include/sensors.h"
 #include <stdlib.h>
+#include <time.h>
 
-/**
- * test sensor that generates some random data
- * 
- */
 int test_sensor(double *ptr)
 {
 	srand(time(NULL));	// random seed for dummy data

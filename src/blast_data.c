@@ -19,10 +19,10 @@ sensor *build_sensor(char *label, char *unit, sensor_function update, sensor_typ
 
 	switch (type) {
 	case AIO:
-		init_aio((mraa_aio_context)new_sensor->context, pin);
+		init_aio((mraa_aio_context *)new_sensor->context, pin);
 		break;
 	case GPIO:
-		init_gpio((mraa_gpio_context)new_sensor->context, pin);
+		init_gpio((mraa_gpio_context *)new_sensor->context, pin);
 		break;
 	case I2C:
 		/* implement later */
@@ -38,10 +38,10 @@ void destroy_sensor(sensor *sensor)
 
 	switch (sensor->type) {
 	case AIO:
-		mraa_aio_close((mraa_aio_context)sensor->context);
+		mraa_aio_close(*(mraa_aio_context *)sensor->context);
 		break;
 	case GPIO:
-		mraa_gpio_close((mraa_gpio_context)sensor->context);
+		mraa_gpio_close(*(mraa_gpio_context *)sensor->context);
 		break;
 	case I2C:
 		/* implement later */
@@ -52,12 +52,12 @@ void destroy_sensor(sensor *sensor)
 	return;
 }
 
-sensor search_sensor(char *name)
+sensor search_sensor(char *label)
 {
 	int i = 0;
 
 	while (sensor_table[i].label != NULL) {
-		if (strcmp(name, sensor_table[i].label) == 0) {
+		if (strcmp(label, sensor_table[i].label) == 0) {
 			return sensor_table[i];
 		}
 
@@ -66,9 +66,7 @@ sensor search_sensor(char *name)
 	return sensor_table[i];
 }
 
-/* figure out how to do this smartly. sscanf() will probably be easiest but
-it won't be efficient. temporarily partition each line and use indices to
-mark strings? */
+/* three star lol */
 int configure_sensors(char *config, sensor ***sensor_key)
 {
 	char *line = config;
@@ -87,24 +85,29 @@ int configure_sensors(char *config, sensor ***sensor_key)
 	/* initialize sensor key */
 	*sensor_key = malloc(sizeof(sensor *) * sensor_count);
 
-	/* string | string | enum | integer */
+	/* parse line of format "string|integer" */
 	for (i = 0; i < sensor_count; ++i) {
-		char *name = line;
-		char *name_end;
+		char *label = line;
+		char *label_end;
+		char *next_line;
 		int pin;
 		sensor temp_sensor;
-		char *next_line = strchr(line, '\n');
+		
+		/* break off current line from sconfig string */
+		next_line = strchr(line, '\n');
 		*next_line = '\0';
 
-		name_end = strchr(line, '|');
-		*name_end = '\0';
-		pin = atoi(name_end + (sizeof(char) * 1));
+		/* isolate the sensor label and pin number */
+		label_end = strchr(line, '|');
+		*label_end = '\0';
+		pin = atoi(label_end + (sizeof(char) * 1));
 
-		temp_sensor = search_sensor(name);
-
-		(*sensor_key)[i] = build_sensor(name, temp_sensor.unit,
+		/* find sensor in table and build a new sensor interface */
+		temp_sensor = search_sensor(label);
+		(*sensor_key)[i] = build_sensor(label, temp_sensor.unit,
 			temp_sensor.update, temp_sensor.type, pin);
 
+		/* jump to next line */
 		line = next_line + (sizeof(char) * 1);
 	}
 

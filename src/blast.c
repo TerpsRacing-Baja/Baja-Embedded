@@ -10,11 +10,8 @@
 #include "include/sensors.h"
 
 /** TODO:
- * receive return message from server upon connection (config)
- * 
  * connection failsafes (filtered by signal type)
- * implement mraa lib
- * 	-> futz with pressure sensor
+ * implement pressure sensor readings
  * 
  */
 
@@ -25,6 +22,7 @@ int main(int argc, char **argv)
 	int num;			// number of configured sensors
 	sensor **sensor_key;		// array of sensor interfaces
 	char *config;			// buffer holding config information
+	struct timeval tp;		// timeval struct for holding time info
 
         /* socket creation and server addressing */
         if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
@@ -58,29 +56,28 @@ int main(int argc, char **argv)
                 }
         }
 
+	/* perform dynamic sensor configuration */
 	num = configure_sensors(config, &sensor_key);
-
-	struct timeval tp;
 
 	/* data collection loop */
 	for (;;) {
 		for (int i = 0; i < num; ++i) {
-			data_msg test_msg;
+			data_msg msg;
 			double *update_data = malloc(sizeof(double));
 
 			if (sensor_key[i]->update(update_data) < 0) {
 				printf("Sensor %s failed on update\n", sensor_key[i]->label);
 			} else {
 				gettimeofday(&tp, NULL);
-				test_msg = build_msg(sensor_key[i]->label,
+				msg = build_msg(sensor_key[i]->label,
 					sensor_key[i]->unit,
 					(tp.tv_sec * 1000 + tp.tv_usec / 1000),
 					*update_data);
 
-				if (send_msg(sock, test_msg) < 0) {
+				if (send_msg(sock, msg) < 0) {
 					perror("guru meditation");
 					close(sock);
-					destroy_msg(test_msg);
+					destroy_msg(msg);
 					free(update_data);
 
 					/* destroy sensors */
@@ -88,14 +85,16 @@ int main(int argc, char **argv)
 						destroy_sensor(sensor_key[i]);
 					}
 
+					free(sensor_key);
 					exit(1);
 				}
 
-				destroy_msg(test_msg);
-				sleep(1);
+				destroy_msg(msg);
 			}
 
 			free(update_data);
 		}
+
+		sleep(1);
 	}
 }
