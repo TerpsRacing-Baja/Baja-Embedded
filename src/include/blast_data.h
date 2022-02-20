@@ -6,9 +6,15 @@
 #include <mraa.h>
 
 /**
+ * any of the three relevant mraa contexts
+ */
+typedef void * mraa_context;
+
+/**
  * opaque definition of a pointer to a sensor update function.
  */
-typedef int (*sensor_function)(double *);
+typedef int (*sensor_function)(double *, mraa_context);
+
 
 /**
  * enumeration describing possible sensor types.
@@ -30,7 +36,7 @@ typedef struct {
 	char *unit;
 	sensor_function update;
 	sensor_type type;
-	void *context;
+	mraa_context context;
 } sensor;
 
 /**

@@ -65,7 +65,7 @@ int main(int argc, char **argv)
 			data_msg msg;
 			double *update_data = malloc(sizeof(double));
 
-			if (sensor_key[i]->update(update_data) < 0) {
+			if (sensor_key[i]->update(update_data, sensor_key[i]->context) < 0) {
 				printf("Sensor %s failed on update\n", sensor_key[i]->label);
 			} else {
 				gettimeofday(&tp, NULL);
