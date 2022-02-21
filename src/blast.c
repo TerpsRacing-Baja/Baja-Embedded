@@ -1,11 +1,13 @@
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <unistd.h>
-#include <time.h>
+#include <signal.h>
 #include <sys/time.h>
 #include <mraa.h>
+
 #include "include/blast_data.h"
 #include "include/sensors.h"
 
@@ -16,7 +18,18 @@
  * 
  */
 
-mraa_i2c_context i2c;
+mraa_i2c_context i2c;	// shared i2c bus context
+int interrupt = 0;	// track signals for shutdown
+
+void handle_signal(int sig_type)
+{
+	if (sig_type == SIGINT || sig_type == SIGTERM) {
+		fprintf(stderr, "guru meditation: shutting down due to interrupt ... \n");
+		interrupt = 1;
+	}
+
+	return;
+}
 
 int main(int argc, char **argv)
 {
@@ -27,8 +40,24 @@ int main(int argc, char **argv)
 	char *config;			// buffer holding config information
 	struct timeval tp;		// timeval struct for holding time info
 
-	/* initialize mraa library */
-	mraa_init();
+	/* custom handlers for sigint and sigterm */
+	struct sigaction handler;
+	handler.sa_handler = handle_signal;
+	if (sigfillset(&handler.sa_mask) < 0) {
+		fprintf(stderr, "guru mediation: failed to set signal masks\n");
+		exit(1);
+	}
+
+	handler.sa_flags = 0;
+	if (sigaction(SIGINT, &handler, 0) < 0) {
+		fprintf(stderr, "guru meditation: failed to set new handler for SIGINT\n");
+		exit(1);
+	}
+
+	if (sigaction(SIGTERM, &handler, 0) < 0) {
+		fprintf(stderr, "guru meditation: failed to set new handler for SIGTERM\n");
+		exit(1);
+	}
 
 	/* create an i2c context for the edison - exposed on bus 6 */
 	i2c = mraa_i2c_init(6);
@@ -36,8 +65,8 @@ int main(int argc, char **argv)
 	/* only run if compiling on edison platform (not testing on other hardware)*/
 	#ifndef TESTING
 		if (i2c == NULL) {
-			mraa_deinit();
 			fprintf(stderr, "guru meditation: failed to initialize i2c-6 bus\n");
+			mraa_deinit();
 			exit(-1);
 		}
 	#endif
@@ -57,6 +86,7 @@ int main(int argc, char **argv)
         if (connect(sock, (struct sockaddr *)&server, sizeof server) < 0) {
                 perror("guru meditation");
                 close(sock);
+		mraa_deinit();
                 exit(1);
         }
 
@@ -69,6 +99,9 @@ int main(int argc, char **argv)
 	for (int recvd_msg_size = 0; recvd_msg_size < (5096 - 1); ++recvd_msg_size) {
 		if (recv(sock, config + recvd_msg_size, 1, 0) < 0) {
 			perror("guru meditation");
+			close(sock);
+			free(config);
+			mraa_deinit();
 			exit(1);
 		}
 
@@ -84,13 +117,14 @@ int main(int argc, char **argv)
 
 	/* perform dynamic sensor configuration */
 	num = configure_sensors(config, &sensor_key);
+	free(config);
 
 	#ifdef DEBUG
 		printf("[*] data collection loop:\n");
 	#endif
 
 	/* data collection loop */
-	for (;;) {
+	while (!interrupt) {
 		for (int i = 0; i < num; ++i) {
 			data_msg msg;
 			float *update_data = malloc(sizeof(float));
@@ -105,7 +139,9 @@ int main(int argc, char **argv)
 					*update_data);
 
 				#ifdef DEBUG
-					printf("[*] %s\n", stringify_msg(msg));
+					char *temp = stringify_msg(msg);
+					printf("[*] %s\n", temp);
+					free(temp);
 				#endif
 
 				if (send_msg(sock, msg) < 0) {
@@ -133,4 +169,16 @@ int main(int argc, char **argv)
 
 		sleep(1);
 	}
+
+	/* if interrupted, clean everything up */
+	close(sock);
+
+	for (int i = 0; i < num; ++i) {
+		destroy_sensor(sensor_key[i]);
+	}
+
+	free(sensor_key);
+	mraa_i2c_stop(i2c);
+	mraa_deinit();
+	exit(1);
 }

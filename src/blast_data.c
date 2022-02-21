@@ -8,9 +8,9 @@
 sensor *build_sensor(char *label, char *unit, sensor_function update, sensor_type type, unsigned int pin)
 {
 	sensor *new_sensor = malloc(sizeof(sensor));
-	new_sensor->label = malloc(strlen(label));
+	new_sensor->label = malloc(strlen(label) + 1);
 	strcpy(new_sensor->label, label);
-	new_sensor->unit = malloc(strlen(unit));
+	new_sensor->unit = malloc(strlen(unit) + 1);
 	strcpy(new_sensor->unit, unit);
 
 	new_sensor->update = update;

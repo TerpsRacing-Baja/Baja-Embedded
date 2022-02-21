@@ -8,7 +8,7 @@ clean:
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	mkdir -p $(@D)
-	gcc -Isrc -c $< -o $@ $(CFLAGS)
+	gcc -Isrc -c $< -o $@ -Os $(CFLAGS)
 
 C_FILES = $(wildcard $(SRC_DIR)/*.c)
 C_FILES += $(wildcard $(SRC_DIR)/sensors/*.c)
@@ -18,4 +18,4 @@ DEP_FILES = $(OBJ_FILES:%.o=%.d)
 -include $(DEP_FILES)
 
 blast: $(OBJ_FILES)
-	gcc -o $(BUILD_DIR)/blast $(OBJ_FILES) -lmraa
+	gcc -o $(BUILD_DIR)/blast $(OBJ_FILES) -lmraa -Os
