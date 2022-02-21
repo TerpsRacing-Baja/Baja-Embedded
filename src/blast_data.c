@@ -19,13 +19,14 @@ sensor *build_sensor(char *label, char *unit, sensor_function update, sensor_typ
 
 	switch (type) {
 	case AIO:
-		init_aio((mraa_aio_context *)new_sensor->context, pin);
+		init_aio((mraa_aio_context *)&new_sensor->context, pin);
 		break;
 	case GPIO:
-		init_gpio((mraa_gpio_context *)new_sensor->context, pin);
+		init_gpio((mraa_gpio_context *)&new_sensor->context, pin);
 		break;
 	case I2C:
-		/* implement later */
+		init_i2c();
+	case TEST:
 	}
 
 	return new_sensor;
@@ -44,7 +45,7 @@ void destroy_sensor(sensor *sensor)
 		mraa_gpio_close(*(mraa_gpio_context *)sensor->context);
 		break;
 	case I2C:
-		/* implement later */
+	case TEST:
 	}
 
 	free(sensor);

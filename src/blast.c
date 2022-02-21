@@ -15,6 +15,8 @@
  * 
  */
 
+mraa_i2c_context i2c;
+
 int main(int argc, char **argv)
 {
 	int sock;			// socket for connection to server
@@ -23,6 +25,18 @@ int main(int argc, char **argv)
 	sensor **sensor_key;		// array of sensor interfaces
 	char *config;			// buffer holding config information
 	struct timeval tp;		// timeval struct for holding time info
+
+	/* initialize mraa library */
+	mraa_init();
+
+	/* create an i2c context for the edison - exposed on bus 6 */
+	i2c = mraa_i2c_init(6);
+
+	if (i2c == NULL) {
+		mraa_deinit();
+		fprintf(stderr, "guru meditation: failed to initialize i2c-6 bus\n");
+		exit(-1);
+	}
 
         /* socket creation and server addressing */
         if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
@@ -86,6 +100,8 @@ int main(int argc, char **argv)
 					}
 
 					free(sensor_key);
+					mraa_i2c_stop(i2c);
+					mraa_deinit();
 					exit(1);
 				}
 

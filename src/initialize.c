@@ -3,9 +3,8 @@
 
 /**
  * initialiation functions for different pin types on the edison.
- * these are meant to be mapped to each sensor interface's
- * initialization function pointers.
- * 
+ * these are mapped according to each sensor interface's enumerated
+ * sensor type.
  */
 
 int init_aio(mraa_aio_context *aio, unsigned int pin)
@@ -28,6 +27,19 @@ int init_gpio(mraa_gpio_context *gpio, unsigned int pin)
 		mraa_deinit();
 		return -1;
 	}
+
+	return 0;
+}
+
+int init_i2c()
+{
+	/**
+	 * We do nothing here. The I2C context is global since we can host
+	 * multiple slaves, and addressing is configured in individual sensor
+	 * update functions. I'm only leaving this function here for the sake
+	 * of consistency in the sensor interface.
+	 * 
+	 */
 
 	return 0;
 }
