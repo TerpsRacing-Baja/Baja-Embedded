@@ -8,7 +8,7 @@ clean:
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	mkdir -p $(@D)
-	gcc -Isrc -c $< -o $@
+	gcc -Isrc -c $< -o $@ $(CFLAGS)
 
 C_FILES = $(wildcard $(SRC_DIR)/*.c)
 C_FILES += $(wildcard $(SRC_DIR)/sensors/*.c)

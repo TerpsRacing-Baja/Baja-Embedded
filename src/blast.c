@@ -10,7 +10,6 @@
 #include "include/sensors.h"
 
 /** TODO:
- * compilation flags for debug and hardware (!!!)
  * calibrate and test pressure sensor
  * connection failsafes (filtered by signal type)
  * make code cleanup consistent / eradicate evil leaks
@@ -34,11 +33,14 @@ int main(int argc, char **argv)
 	/* create an i2c context for the edison - exposed on bus 6 */
 	i2c = mraa_i2c_init(6);
 
-	if (i2c == NULL) {
-		mraa_deinit();
-		fprintf(stderr, "guru meditation: failed to initialize i2c-6 bus\n");
-		exit(-1);
-	}
+	/* only run if compiling on edison platform (not testing on other hardware)*/
+	#ifndef TESTING
+		if (i2c == NULL) {
+			mraa_deinit();
+			fprintf(stderr, "guru meditation: failed to initialize i2c-6 bus\n");
+			exit(-1);
+		}
+	#endif
 
         /* socket creation and server addressing */
         if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
@@ -58,6 +60,10 @@ int main(int argc, char **argv)
                 exit(1);
         }
 
+	#ifdef DEBUG
+		printf("[*] connected to blast server\n");
+	#endif
+
 	/* receive configuration data from server */
 	config = malloc(5096);
 	for (int recvd_msg_size = 0; recvd_msg_size < (5096 - 1); ++recvd_msg_size) {
@@ -72,14 +78,22 @@ int main(int argc, char **argv)
                 }
         }
 
+	#ifdef DEBUG
+		printf("[*] received config:\n%s\n", config);
+	#endif
+
 	/* perform dynamic sensor configuration */
 	num = configure_sensors(config, &sensor_key);
+
+	#ifdef DEBUG
+		printf("[*] data collection loop:\n");
+	#endif
 
 	/* data collection loop */
 	for (;;) {
 		for (int i = 0; i < num; ++i) {
 			data_msg msg;
-			double *update_data = malloc(sizeof(double));
+			float *update_data = malloc(sizeof(float));
 
 			if (sensor_key[i]->update(update_data, sensor_key[i]->context) < 0) {
 				printf("Sensor %s failed on update\n", sensor_key[i]->label);
@@ -89,6 +103,10 @@ int main(int argc, char **argv)
 					sensor_key[i]->unit,
 					(tp.tv_sec * 1000 + tp.tv_usec / 1000),
 					*update_data);
+
+				#ifdef DEBUG
+					printf("[*] %s\n", stringify_msg(msg));
+				#endif
 
 				if (send_msg(sock, msg) < 0) {
 					perror("guru meditation");

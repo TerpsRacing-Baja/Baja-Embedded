@@ -15,7 +15,7 @@ typedef void * mraa_context;
  * opaque definition of a pointer to a sensor update function.
  * 
  */
-typedef int (*sensor_function)(double *, mraa_context);
+typedef int (*sensor_function)(float *, mraa_context);
 
 
 /**
@@ -52,7 +52,7 @@ typedef struct {
 	char *label;
 	char *unit;
 	unsigned long long timestamp;
-	double data;
+	float data;
 } data_msg;
 
 /**
@@ -98,7 +98,7 @@ int configure_sensors(char *config, sensor ***sensor_key);
  * 
  */
 data_msg build_msg(const char *label, const char *unit,
-		   unsigned long long timestamp, double data);
+		   unsigned long long timestamp, float data);
 
 /**
  *  free the char pointers in a given data message.

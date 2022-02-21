@@ -115,7 +115,7 @@ int configure_sensors(char *config, sensor ***sensor_key)
 	return sensor_count;	
 }
 
-data_msg build_msg(const char *label, const char *unit, unsigned long long timestamp, double data)
+data_msg build_msg(const char *label, const char *unit, unsigned long long timestamp, float data)
 {
 	data_msg msg;
 	msg.label = malloc(strlen(label) + 1);
@@ -140,7 +140,7 @@ char *stringify_msg(data_msg new_msg)
 {
         /* i hope 256 bytes is enough */
         char *msg_string = malloc(256);
-        snprintf(msg_string, 256, "%s|%s|%llu|%lf", new_msg.label, new_msg.unit, new_msg.timestamp, new_msg.data);
+        snprintf(msg_string, 256, "%s|%s|%llu|%f", new_msg.label, new_msg.unit, new_msg.timestamp, new_msg.data);
         
         return msg_string;
 }

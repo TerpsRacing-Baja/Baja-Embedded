@@ -11,10 +11,13 @@ int init_aio(mraa_aio_context *aio, unsigned int pin)
 {
 	*aio = mraa_aio_init(pin);
 
-	if (*aio == NULL) {
-		mraa_deinit();
-		return -1;
-	}
+	/* only compile on edison platform */
+	#ifndef TESTING
+		if (*aio == NULL) {
+			mraa_deinit();
+			return -1;
+		}
+	#endif
 
 	return 0;
 }
@@ -23,10 +26,13 @@ int init_gpio(mraa_gpio_context *gpio, unsigned int pin)
 {
 	*gpio = mraa_gpio_init(pin);
 
-	if (*gpio == NULL) {
-		mraa_deinit();
-		return -1;
-	}
+	/* only compile on edison platform */
+	#ifndef TESTING
+		if (*gpio == NULL) {
+			mraa_deinit();
+			return -1;
+		}
+	#endif
 
 	return 0;
 }
