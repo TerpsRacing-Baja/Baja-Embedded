@@ -13,8 +13,8 @@
 
 /** TODO:
  * calibrate and test pressure sensor
- * connection failsafes (filtered by signal type)
- * make code cleanup consistent / eradicate evil leaks
+ * sort out CAN nonsense
+ * find an i2c sensor or three to test
  * 
  */
 
