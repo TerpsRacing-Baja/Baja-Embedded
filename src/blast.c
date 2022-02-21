@@ -10,8 +10,10 @@
 #include "include/sensors.h"
 
 /** TODO:
+ * compilation flags for debug and hardware (!!!)
+ * calibrate and test pressure sensor
  * connection failsafes (filtered by signal type)
- * implement pressure sensor readings
+ * make code cleanup consistent / eradicate evil leaks
  * 
  */
 
