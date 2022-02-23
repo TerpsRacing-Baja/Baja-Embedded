@@ -26,7 +26,9 @@ sensor *build_sensor(char *label, char *unit, sensor_function update, sensor_typ
 		break;
 	case I2C:
 		init_i2c();
+		break;
 	case TEST:
+		break;
 	}
 
 	return new_sensor;
@@ -45,7 +47,9 @@ void destroy_sensor(sensor *sensor)
 		mraa_gpio_close(*(mraa_gpio_context *)sensor->context);
 		break;
 	case I2C:
+		break;
 	case TEST:
+		break;
 	}
 
 	free(sensor);
