@@ -72,6 +72,7 @@ sensor search_sensor(char *label)
 }
 
 /* three star lol */
+/* i know this could be done without three stars but it's funny */
 int configure_sensors(char *config, sensor ***sensor_key)
 {
 	char *line = config;
