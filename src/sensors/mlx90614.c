@@ -15,7 +15,7 @@ int mlx90614(float *ptr)
 	}
 
 	/* transform data according to datasheet */
-	uint16_t data = (buffer[0] | (uint16_t)(buffer[1] << 8));
+	uint16_t data = (buffer[0] | ((uint16_t)buffer[1] << 8));
 	*ptr = data;
 
 	if (*ptr == 0) {
