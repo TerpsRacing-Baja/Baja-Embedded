@@ -14,7 +14,7 @@ int mlx90614(float *ptr, mraa_context context)
 	}
 
 	/* read data from TOBJ1 address, which returns the temp we want */
-	if (mraa_i2c_read_bytes_data(i2c, MLX90614_TOB1, buffer, 3) != MRAA_SUCCESS) {
+	if (mraa_i2c_read_bytes_data(i2c, MLX90614_TOB1, buffer, 3) < 0) {
 		return -1;
 	}
 
@@ -27,7 +27,7 @@ int mlx90614(float *ptr, mraa_context context)
 	}
 
 	/* make celsius */
-	*ptr *= 0.2;
+	*ptr *= 0.02;
 	*ptr -= 273.15;
 
 	return 0;
