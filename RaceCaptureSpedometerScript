@@ -4,6 +4,7 @@ setTickRate(1000)
 initSer(1)
 id = addChannel("X-Speed", 200, 0, 120)
 gps_id = addChannel("_GPS_SPEED", 10, 1, 0, 60)
+hall_id = addChannel("hall sensor", 200)
 
 toggle = 0
 a_x = 0; a_y = 0; a_z = 0;
@@ -117,6 +118,10 @@ print(" GPS SPEED: ")
 gps_speed = getGpsSpeed()
   print(gps_speed)
 setChannel(gps_id, gps_speed)
+
+hall = getAnalog(0)
+
+setChannel(hall_id, hall)
 
 
 
