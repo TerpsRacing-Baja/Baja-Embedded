@@ -1,7 +1,7 @@
 #include <mraa.h>
 #include "include/sensors.h"
 
-int mlx90614(float *ptr)
+int mlx90614(float *ptr, mraa_context context)
 {
 	uint8_t buffer[3];
 	/* set I2C bus address */

@@ -26,6 +26,6 @@ int fps_v2_range_5v(float *ptr, mraa_context context);
  * reads data from the mlx90614 i2c temperature sensor 
  * 
  */
-int mlx90614(float *ptr);
+int mlx90614(float *ptr, mraa_context context);
 
 #endif

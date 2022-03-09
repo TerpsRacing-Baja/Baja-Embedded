@@ -12,7 +12,6 @@
 #include "include/sensors.h"
 
 /** TODO:
- * calibrate and test pressure sensor
  * sort out CAN nonsense
  * find an i2c sensor or three to test
  * 
@@ -135,7 +134,7 @@ int main(int argc, char **argv)
 				gettimeofday(&tp, NULL);
 				msg = build_msg(sensor_key[i]->label,
 					sensor_key[i]->unit,
-					(tp.tv_sec * 1000 + tp.tv_usec / 1000),
+					((unsigned long long)tp.tv_sec * 1000) + (tp.tv_usec / 1000),
 					*update_data);
 
 				#ifdef DEBUG
