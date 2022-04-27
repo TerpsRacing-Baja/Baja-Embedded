@@ -21,12 +21,14 @@ typedef int (*sensor_function)(float *, mraa_context);
 /**
  * enumeration describing possible sensor types.
  * analog, digital i/o, i2c, and test types are available.
+ * the RACE enumeration is reserved for the MCP2515 CAN bus.
  * 
  */
 typedef enum {
 	AIO,
 	GPIO,
 	I2C,
+	RACE,
 	TEST
 } sensor_type;
 

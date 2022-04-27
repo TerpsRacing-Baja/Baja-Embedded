@@ -28,4 +28,15 @@ int fps_v2_range_5v(float *ptr, mraa_context context);
  */
 int mlx90614(float *ptr, mraa_context context);
 
+/**
+ * query all sensors on the racecapture pro mk3 through the mcp2515
+ * CAN bus. notably, this function does not use its arguments at all,
+ * and always returns -1. all networking with the blast server is
+ * done within the function, rather than within the main data collection
+ * loop, because there is extra work involved with querying the sensors
+ * attached to the racecapture.
+ * 
+ */
+int mcp2515(float *ptr, mraa_context context);
+
 #endif

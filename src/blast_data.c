@@ -88,6 +88,17 @@ int configure_sensors(char *config, sensor ***sensor_key)
 		++i;
 	}
 
+	/**
+	 * 
+	 * i need to query the racecapture here in order to find out
+	 * how many sensors it hosts, and their information.
+	 * 
+	 * afterwards, i need to add that info to a separate data structure,
+	 * and initialize the mcp2515 in the sensor key. note that there
+	 * is some special behavior for the mcp2515 "sensor"!
+	 * 
+	 */
+
 	/* initialize sensor key */
 	*sensor_key = malloc(sizeof(sensor *) * sensor_count);
 
