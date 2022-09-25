@@ -3,9 +3,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <sys/mount.h>
 #include <arpa/inet.h>
 #include <signal.h>
 #include <sys/time.h>
+#include <unistd.h>
 #include <mraa.h>
 
 #include "include/blast_data.h"
@@ -38,6 +40,9 @@ int main(int argc, char **argv)
 	sensor **sensor_key;		// array of sensor interfaces
 	char *config;			// buffer holding config information
 	struct timeval tp;		// timeval struct for holding time info
+	int sd_exists;			// set to true if there is an sd card
+	char filename[70] = "/mnt/";	// name of log file
+	FILE *logfile;			// file pointer to logfile
 
 	/* custom handlers for sigint and sigterm */
 	struct sigaction handler;
@@ -69,6 +74,25 @@ int main(int argc, char **argv)
 			exit(-1);
 		}
 	#endif
+
+	/* TODO: run SD card check here */
+	/* do an access and mount */
+	/* open file based on datetime */
+	if (access("/dev/mmcblk1p1", W_OK) == 0) {
+		sd_exists = 1;
+		if (mount("/dev/mmcblk1p1", "/mnt", "vfat", MS_NOATIME, NULL) == 0) {
+			gettimeofday(&tp, NULL);
+			struct tm *tm = localtime(&tp);
+			strftime(filename + 5, sizeof(filename) - 5, "%Y-%m-%d_%H-%M-%S", tm);
+
+			logfile = fopen(filename, "ab+");
+		} else {
+			fprintf(1, "Failed to mount SD card\n");
+			sd_exists = 0;
+		}
+	} else {
+		sd_exists = 0;
+	}
 
         /* socket creation and server addressing */
         if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
@@ -142,6 +166,17 @@ int main(int argc, char **argv)
 					printf("[*] %s\n", temp);
 					free(temp);
 				#endif
+
+				/* TODO: save to SD here */
+				/* do fwrite */
+				if (sd_exists) {
+					char *msg_string = stringify_msg(msg);
+
+					fwrite(msg_string, strlen(msg_string), 1, logfile);
+					fwrite("\n", 1, 1, logfile);
+
+					free(msg_string);
+				}
 
 				if (send_msg(sock, msg) < 0) {
 					perror("guru meditation");
