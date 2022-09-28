@@ -75,8 +75,7 @@ int main(int argc, char **argv)
 		}
 	#endif
 
-	/* TODO: run SD card check here */
-	/* do an access and mount */
+	/* do an access and mount sd if it exists */
 	/* open file based on datetime */
 	if (access("/dev/mmcblk1p1", W_OK) == 0) {
 		sd_exists = 1;
@@ -86,6 +85,8 @@ int main(int argc, char **argv)
 			strftime(filename + 5, sizeof(filename) - 5, "%Y-%m-%d_%H-%M-%S", tm);
 
 			logfile = fopen(filename, "ab+");
+
+			fwrite("Label|Unit|Timestamp|Value\n", 27, 1, logfile);
 		} else {
 			fprintf(1, "Failed to mount SD card\n");
 			sd_exists = 0;
