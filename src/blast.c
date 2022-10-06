@@ -25,7 +25,7 @@ int interrupt = 0;	// track signals for shutdown
 void handle_signal(int sig_type)
 {
 	if (sig_type == SIGINT || sig_type == SIGTERM) {
-		fprintf(stderr, "guru meditation: shutting down due to interrupt ... \n");
+		fprintf(stderr, "profound meditation: shutting down due to interrupt ... \n");
 		interrupt = 1;
 	}
 
@@ -48,18 +48,18 @@ int main(int argc, char **argv)
 	struct sigaction handler;
 	handler.sa_handler = handle_signal;
 	if (sigfillset(&handler.sa_mask) < 0) {
-		fprintf(stderr, "guru mediation: failed to set signal masks\n");
+		fprintf(stderr, "profound mediation: failed to set signal masks\n");
 		exit(1);
 	}
 
 	handler.sa_flags = 0;
 	if (sigaction(SIGINT, &handler, 0) < 0) {
-		fprintf(stderr, "guru meditation: failed to set new handler for SIGINT\n");
+		fprintf(stderr, "profound meditation: failed to set new handler for SIGINT\n");
 		exit(1);
 	}
 
 	if (sigaction(SIGTERM, &handler, 0) < 0) {
-		fprintf(stderr, "guru meditation: failed to set new handler for SIGTERM\n");
+		fprintf(stderr, "profound meditation: failed to set new handler for SIGTERM\n");
 		exit(1);
 	}
 
@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 	/* only run if compiling on edison platform (not testing on other hardware)*/
 	#ifndef TESTING
 		if (i2c == NULL) {
-			fprintf(stderr, "guru meditation: failed to initialize i2c-6 bus\n");
+			fprintf(stderr, "profound meditation: failed to initialize i2c-6 bus\n");
 			mraa_deinit();
 			exit(-1);
 		}
@@ -97,7 +97,7 @@ int main(int argc, char **argv)
 
         /* socket creation and server addressing */
         if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
-                perror("guru meditation");
+                perror("profound meditation");
                 exit(1);
         }
 
@@ -108,7 +108,7 @@ int main(int argc, char **argv)
 
         /* establish connection to server */
         if (connect(sock, (struct sockaddr *)&server, sizeof server) < 0) {
-                perror("guru meditation");
+                perror("profound meditation");
                 close(sock);
 		mraa_deinit();
                 exit(1);
@@ -122,7 +122,7 @@ int main(int argc, char **argv)
 	config = malloc(5096);
 	for (int recvd_msg_size = 0; recvd_msg_size < (5096 - 1); ++recvd_msg_size) {
 		if (recv(sock, config + recvd_msg_size, 1, 0) < 0) {
-			perror("guru meditation");
+			perror("profound meditation");
 			close(sock);
 			free(config);
 			mraa_deinit();
@@ -180,7 +180,7 @@ int main(int argc, char **argv)
 				}
 
 				if (send_msg(sock, msg) < 0) {
-					perror("guru meditation");
+					perror("profound meditation");
 					close(sock);
 					destroy_msg(msg);
 					free(update_data);
