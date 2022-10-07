@@ -41,6 +41,7 @@ int main(int argc, char **argv)
 	char *config;			// buffer holding config information
 	struct timeval tp;		// timeval struct for holding time info
 	int sd_exists;			// set to true if there is an sd card
+	int network_exist;
 	char filename[70] = "/mnt/";	// name of log file
 	FILE *logfile;			// file pointer to logfile
 
@@ -108,11 +109,15 @@ int main(int argc, char **argv)
 
         /* establish connection to server */
         if (connect(sock, (struct sockaddr *)&server, sizeof server) < 0) {
-                perror("profound meditation");
-                close(sock);
-		mraa_deinit();
-                exit(1);
+			network_exist = 0;
+			perror("profound meditation");
+			close(sock);
+			mraa_deinit();
+			exit(1);
         }
+		else {
+			network_exist = 1;
+		}
 
 	#ifdef DEBUG
 		printf("[*] connected to blast server\n");
@@ -120,7 +125,8 @@ int main(int argc, char **argv)
 
 	/* receive configuration data from server */
 	config = malloc(5096);
-	for (int recvd_msg_size = 0; recvd_msg_size < (5096 - 1); ++recvd_msg_size) {
+	if (network_exist) {
+		for (int recvd_msg_size = 0; recvd_msg_size < (5096 - 1); ++recvd_msg_size) {
 		if (recv(sock, config + recvd_msg_size, 1, 0) < 0) {
 			perror("profound meditation");
 			close(sock);
@@ -135,9 +141,17 @@ int main(int argc, char **argv)
                 }
         }
 
-	#ifdef DEBUG
-		printf("[*] received config:\n%s\n", config);
-	#endif
+		#ifdef DEBUG
+			printf("[*] received config:\n%s\n", config);
+		#endif
+		FILE *config_file = fopen("./configuration", "w");
+		fwrite(config, 1, strlen(config)+1, config_file);
+	}
+	else {
+		FILE *config_file = fopen("./configuration", "r");
+		fread(config, 1, 5096, config_file);
+	}
+	
 
 	/* perform dynamic sensor configuration */
 	num = configure_sensors(config, &sensor_key);
@@ -179,7 +193,7 @@ int main(int argc, char **argv)
 					free(msg_string);
 				}
 
-				if (send_msg(sock, msg) < 0) {
+				if (network_exist && send_msg(sock, msg) < 0) {
 					perror("profound meditation");
 					close(sock);
 					destroy_msg(msg);
