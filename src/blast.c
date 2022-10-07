@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 	char *config;			// buffer holding config information
 	struct timeval tp;		// timeval struct for holding time info
 	int sd_exists;			// set to true if there is an sd card
-	int network_exist;
+	int network_exists;
 	char filename[70] = "/mnt/";	// name of log file
 	FILE *logfile;			// file pointer to logfile
 
@@ -109,41 +109,40 @@ int main(int argc, char **argv)
 
         /* establish connection to server */
         if (connect(sock, (struct sockaddr *)&server, sizeof server) < 0) {
-			network_exist = 0;
-			perror("profound meditation");
-			close(sock);
-			mraa_deinit();
-			exit(1);
-        }
-		else {
-			network_exist = 1;
-		}
+		network_exists = 0;
+		perror("profound meditation");
+        } else {
+		network_exists = 1;
+	}
 
 	#ifdef DEBUG
-		printf("[*] connected to blast server\n");
+		if (network_exists) {
+			printf("[*] connected to blast server\n");
+		}
 	#endif
 
 	/* receive configuration data from server */
 	config = malloc(5096);
-	if (network_exist) {
+	if (network_exists) {
 		for (int recvd_msg_size = 0; recvd_msg_size < (5096 - 1); ++recvd_msg_size) {
-		if (recv(sock, config + recvd_msg_size, 1, 0) < 0) {
-			perror("profound meditation");
-			close(sock);
-			free(config);
-			mraa_deinit();
-			exit(1);
-		}
+			if (recv(sock, config + recvd_msg_size, 1, 0) < 0) {
+				perror("profound meditation");
+				close(sock);
+				free(config);
+				mraa_deinit();
+				exit(1);
+			}
 
-                if (*(config + recvd_msg_size) == '&') {
-                        *(config + recvd_msg_size) = '\0';
-                        break;
-                }
-        }
+                	if (*(config + recvd_msg_size) == '&') {
+                        	*(config + recvd_msg_size) = '\0';
+                        	break;
+                	}
+        	}
 
 		#ifdef DEBUG
 			printf("[*] received config:\n%s\n", config);
 		#endif
+
 		FILE *config_file = fopen("./configuration", "w");
 		fwrite(config, 1, strlen(config)+1, config_file);
 	}
@@ -152,7 +151,6 @@ int main(int argc, char **argv)
 		fread(config, 1, 5096, config_file);
 	}
 	
-
 	/* perform dynamic sensor configuration */
 	num = configure_sensors(config, &sensor_key);
 	free(config);
@@ -193,7 +191,7 @@ int main(int argc, char **argv)
 					free(msg_string);
 				}
 
-				if (network_exist && send_msg(sock, msg) < 0) {
+				if (network_exists && send_msg(sock, msg) < 0) {
 					perror("profound meditation");
 					close(sock);
 					destroy_msg(msg);
