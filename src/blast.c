@@ -35,15 +35,15 @@ void handle_signal(int sig_type)
 int main(int argc, char **argv)
 {
 	int sock;			// socket for connection to server
-        struct sockaddr_in server;	// server address
-	int num;			// number of configured sensors
-	sensor **sensor_key;		// array of sensor interfaces
-	char *config;			// buffer holding config information
-	struct timeval tp;		// timeval struct for holding time info
 	int sd_exists;			// set to true if there is an sd card
-	int network_exists;
+	int network_exists;		// set to true if there is network connectivity
+	int num;			// number of configured sensors
+        struct sockaddr_in server;	// server address
+	struct timeval tp;		// timeval struct for holding time info
 	char filename[70] = "/mnt/";	// name of log file
+	char *config;			// buffer holding config information
 	FILE *logfile;			// file pointer to logfile
+	sensor **sensor_key;		// array of sensor interfaces
 
 	/* custom handlers for sigint and sigterm */
 	struct sigaction handler;
@@ -81,15 +81,16 @@ int main(int argc, char **argv)
 	if (access("/dev/mmcblk1p1", W_OK) == 0) {
 		sd_exists = 1;
 		if (mount("/dev/mmcblk1p1", "/mnt", "vfat", MS_NOATIME, NULL) == 0) {
-			gettimeofday(&tp, NULL);
-			struct tm *tm = localtime(&tp);
+			time_t raw_time;
+			time(&raw_time);
+			struct tm *tm = localtime(&raw_time);
 			strftime(filename + 5, sizeof(filename) - 5, "%Y-%m-%d_%H-%M-%S", tm);
 
 			logfile = fopen(filename, "ab+");
 
 			fwrite("Label|Unit|Timestamp|Value\n", 27, 1, logfile);
 		} else {
-			fprintf(1, "Failed to mount SD card\n");
+			fprintf(stderr, "Failed to mount SD card\n");
 			sd_exists = 0;
 		}
 	} else {
@@ -163,16 +164,16 @@ int main(int argc, char **argv)
 	while (!interrupt) {
 		for (int i = 0; i < num; ++i) {
 			data_msg msg;
-			float *update_data = malloc(sizeof(float));
+			float update_data;
 
-			if (sensor_key[i]->update(update_data, sensor_key[i]->context) < 0) {
+			if (sensor_key[i]->update(&update_data, sensor_key[i]->context) < 0) {
 				printf("Sensor %s failed on update\n", sensor_key[i]->label);
 			} else {
 				gettimeofday(&tp, NULL);
 				msg = build_msg(sensor_key[i]->label,
 					sensor_key[i]->unit,
 					((unsigned long long)tp.tv_sec * 1000) + (tp.tv_usec / 1000),
-					*update_data);
+					update_data);
 
 				#ifdef DEBUG
 					char *temp = stringify_msg(msg);
@@ -195,7 +196,6 @@ int main(int argc, char **argv)
 					perror("profound meditation");
 					close(sock);
 					destroy_msg(msg);
-					free(update_data);
 
 					/* destroy sensors */
 					for (int i = 0; i < num; ++i) {
@@ -210,8 +210,6 @@ int main(int argc, char **argv)
 
 				destroy_msg(msg);
 			}
-
-			free(update_data);
 		}
 
 		sleep(1);
