@@ -13,12 +13,6 @@
 #include "include/blast_data.h"
 #include "include/sensors.h"
 
-/** TODO:
- * sort out CAN nonsense
- * find an i2c sensor or three to test
- * 
- */
-
 mraa_i2c_context i2c;	// shared i2c bus context
 int interrupt = 0;	// track signals for shutdown
 
@@ -181,13 +175,12 @@ int main(int argc, char **argv)
 					free(temp);
 				#endif
 
-				/* TODO: save to SD here */
-				/* do fwrite */
 				if (sd_exists) {
 					char *msg_string = stringify_msg(msg);
 
 					fwrite(msg_string, strlen(msg_string), 1, logfile);
 					fwrite("\n", 1, 1, logfile);
+					fflush(logfile);
 
 					free(msg_string);
 				}
@@ -225,6 +218,7 @@ int main(int argc, char **argv)
 	free(sensor_key);
 	mraa_i2c_stop(i2c);
 	mraa_deinit();
+	fclose(logfile);
 	umount("/mnt");
 	exit(1);
 }
