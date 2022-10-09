@@ -225,5 +225,6 @@ int main(int argc, char **argv)
 	free(sensor_key);
 	mraa_i2c_stop(i2c);
 	mraa_deinit();
+	umount("/mnt");
 	exit(1);
 }
