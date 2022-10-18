@@ -112,6 +112,8 @@ int configure_sensors(char *config, sensor ***sensor_key)
 	for (i = 0; i < sensor_count; ++i) {
 		char *label = line;
 		char *label_end;
+		char *name;
+		char *name_end;
 		char *next_line;
 		int pin;
 		sensor temp_sensor;
@@ -123,11 +125,15 @@ int configure_sensors(char *config, sensor ***sensor_key)
 		/* isolate the sensor label and pin number */
 		label_end = strchr(line, '|');
 		*label_end = '\0';
-		pin = atoi(label_end + (sizeof(char) * 1));
+		name = label_end + 1;
+		name_end = strchr(name, '|');
+		*name_end = '\0';
+		
+		pin = atoi(name_end + (sizeof(char) * 1));
 
 		/* find sensor in table and build a new sensor interface */
 		temp_sensor = search_sensor(label);
-		(*sensor_key)[i] = build_sensor(label, temp_sensor.unit,
+		(*sensor_key)[i] = build_sensor(label, name, temp_sensor.unit,
 			temp_sensor.update, temp_sensor.type, pin);
 
 		/* jump to next line */
