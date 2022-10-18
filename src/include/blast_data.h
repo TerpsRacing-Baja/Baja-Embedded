@@ -39,6 +39,7 @@ typedef enum {
  */
 typedef struct {
 	char *label;
+	char *name; // added new name var to sensor struct
 	char *unit;
 	sensor_function update;
 	sensor_type type;
@@ -52,6 +53,7 @@ typedef struct {
  */
 typedef struct {
 	char *label;
+	char *name; // added new name var to data_msg struct
 	char *unit;
 	unsigned long long timestamp;
 	float data;
@@ -74,7 +76,7 @@ extern mraa_i2c_context i2c;
  * allocate memory for a sensor given its components.
  * 
  */
-sensor *build_sensor(char *label, char *unit, sensor_function update, sensor_type type, unsigned int pin);
+sensor *build_sensor(char *label, char *name, char *unit, sensor_function update, sensor_type type, unsigned int pin); // added name param
 
 /**
  * deallocate a sensor and its components.
@@ -99,8 +101,8 @@ int configure_sensors(char *config, sensor ***sensor_key);
  *  load all information for a single data point into a message structure.
  * 
  */
-data_msg build_msg(const char *label, const char *unit,
-		   unsigned long long timestamp, float data);
+data_msg build_msg(const char *label, const char *name, const char *unit, 
+		   unsigned long long timestamp, float data); // added new const name param 
 
 /**
  *  free the char pointers in a given data message.

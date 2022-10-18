@@ -5,11 +5,17 @@
 #include "include/blast_data.h"
 #include "include/initialize.h"
 
-sensor *build_sensor(char *label, char *unit, sensor_function update, sensor_type type, unsigned int pin)
+// added name char to reflect changes made build_sensor declaration in blast_data.h interface 
+sensor *build_sensor(char *label, char *name, char *unit, sensor_function update, sensor_type type, unsigned int pin)
 {
 	sensor *new_sensor = malloc(sizeof(sensor));
 	new_sensor->label = malloc(strlen(label) + 1);
 	strcpy(new_sensor->label, label);
+
+	// created space for value @ *name in new_sensor->name
+	new_sensor->name = malloc(strlen(name)+1);
+	strcopy(new_sensor->name, name);
+
 	new_sensor->unit = malloc(strlen(unit) + 1);
 	strcpy(new_sensor->unit, unit);
 
@@ -37,6 +43,7 @@ sensor *build_sensor(char *label, char *unit, sensor_function update, sensor_typ
 void destroy_sensor(sensor *sensor)
 {
 	free(sensor->label);
+	free(sensor->name); // frees mem referenced by sensor->name
 	free(sensor->unit);
 
 	switch (sensor->type) {
@@ -131,13 +138,20 @@ int configure_sensors(char *config, sensor ***sensor_key)
 	return sensor_count;	
 }
 
-data_msg build_msg(const char *label, const char *unit, unsigned long long timestamp, float data)
+// added name param to method signature to reflect changes to interface edits of build_msg
+data_msg build_msg(const char *label, const char *name, const char *unit, unsigned long long timestamp, float data)
 {
 	data_msg msg;
 	msg.label = malloc(strlen(label) + 1);
 	strcpy(msg.label, label);
+
+	// allcoates mem referenced by *name to msg.name
+	msg.name = malloc(strlen(name) + 1);
+	strcopy(msg.name, name);
+
 	msg.unit = malloc(strlen(unit) + 1);
 	strcpy(msg.unit, unit);
+
 	msg.timestamp = timestamp;
 	msg.data = data;
 
@@ -147,6 +161,7 @@ data_msg build_msg(const char *label, const char *unit, unsigned long long times
 void destroy_msg(data_msg msg)
 {
 	free(msg.label);
+	free(msg.name); // frees mem referenced by msg.name
 	free(msg.unit);
 
 	return;
@@ -156,7 +171,8 @@ char *stringify_msg(data_msg new_msg)
 {
         /* i hope 256 bytes is enough */
         char *msg_string = malloc(256);
-        snprintf(msg_string, 256, "%s|%s|%llu|%f", new_msg.label, new_msg.unit, new_msg.timestamp, new_msg.data);
+		// added new_msg.name as arg
+        snprintf(msg_string, 256, "%s|%s|%llu|%f", new_msg.label, new_msg.name, new_msg.unit, new_msg.timestamp, new_msg.data);
         
         return msg_string;
 }
