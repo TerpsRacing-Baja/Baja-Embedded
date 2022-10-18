@@ -12,7 +12,6 @@ sensor *build_sensor(char *label, char *name, char *unit, sensor_function update
 	new_sensor->label = malloc(strlen(label) + 1);
 	strcpy(new_sensor->label, label);
 
-	// created space for value @ *name in new_sensor->name
 	new_sensor->name = malloc(strlen(name)+1);
 	strcpy(new_sensor->name, name);
 
@@ -145,7 +144,6 @@ data_msg build_msg(const char *label, const char *name, const char *unit, unsign
 	msg.label = malloc(strlen(label) + 1);
 	strcpy(msg.label, label);
 
-	// allcoates mem referenced by *name to msg.name
 	msg.name = malloc(strlen(name) + 1);
 	strcpy(msg.name, name);
 
@@ -161,7 +159,7 @@ data_msg build_msg(const char *label, const char *name, const char *unit, unsign
 void destroy_msg(data_msg msg)
 {
 	free(msg.label);
-	free(msg.name); // frees mem referenced by msg.name
+	free(msg.name); 
 	free(msg.unit);
 
 	return;
@@ -171,8 +169,7 @@ char *stringify_msg(data_msg new_msg)
 {
         /* i hope 256 bytes is enough */
         char *msg_string = malloc(256);
-		// added new_msg.name as arg
-        snprintf(msg_string, 256, "%s|%s|%llu|%f", new_msg.label, new_msg.name, new_msg.unit, new_msg.timestamp, new_msg.data);
+        snprintf(msg_string, 256, "%s|%s|%s|%llu|%f", new_msg.label, new_msg.name, new_msg.unit, new_msg.timestamp, new_msg.data);
         
         return msg_string;
 }
