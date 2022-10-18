@@ -14,7 +14,7 @@ sensor *build_sensor(char *label, char *name, char *unit, sensor_function update
 
 	// created space for value @ *name in new_sensor->name
 	new_sensor->name = malloc(strlen(name)+1);
-	strcopy(new_sensor->name, name);
+	strcpy(new_sensor->name, name);
 
 	new_sensor->unit = malloc(strlen(unit) + 1);
 	strcpy(new_sensor->unit, unit);
@@ -147,7 +147,7 @@ data_msg build_msg(const char *label, const char *name, const char *unit, unsign
 
 	// allcoates mem referenced by *name to msg.name
 	msg.name = malloc(strlen(name) + 1);
-	strcopy(msg.name, name);
+	strcpy(msg.name, name);
 
 	msg.unit = malloc(strlen(unit) + 1);
 	strcpy(msg.unit, unit);
