@@ -5,7 +5,6 @@
 #include <sys/socket.h>
 #include <sys/mount.h>
 #include <arpa/inet.h>
-
 #include <signal.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -165,7 +164,7 @@ int main(int argc, char **argv)
 				printf("Sensor %s failed on update\n", sensor_key[i]->label);
 			} else {
 				gettimeofday(&tp, NULL);
-				msg = build_msg(sensor_key[i]->label,
+				msg = build_msg(sensor_key[i]->label, sensor_key[i]->name,
 					sensor_key[i]->unit,
 					((unsigned long long)tp.tv_sec * 1000) + (tp.tv_usec / 1000),
 					update_data);
