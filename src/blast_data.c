@@ -1,15 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <mraa.h>
 #include <sys/socket.h>
 #include "include/blast_data.h"
 #include "include/initialize.h"
 
-sensor *build_sensor(char *label, char *unit, sensor_function update, sensor_type type, unsigned int pin)
+// added name char to reflect changes made build_sensor declaration in blast_data.h interface 
+sensor *build_sensor(char *label, char *name, char *unit, sensor_function update, sensor_type type, unsigned int pin)
 {
 	sensor *new_sensor = malloc(sizeof(sensor));
 	new_sensor->label = malloc(strlen(label) + 1);
 	strcpy(new_sensor->label, label);
+
+	new_sensor->name = malloc(strlen(name)+1);
+	strcpy(new_sensor->name, name);
+
 	new_sensor->unit = malloc(strlen(unit) + 1);
 	strcpy(new_sensor->unit, unit);
 
@@ -37,6 +43,7 @@ sensor *build_sensor(char *label, char *unit, sensor_function update, sensor_typ
 void destroy_sensor(sensor *sensor)
 {
 	free(sensor->label);
+	free(sensor->name); // frees mem referenced by sensor->name
 	free(sensor->unit);
 
 	switch (sensor->type) {
@@ -106,6 +113,8 @@ int configure_sensors(char *config, sensor ***sensor_key)
 	for (i = 0; i < sensor_count; ++i) {
 		char *label = line;
 		char *label_end;
+		char *name;
+		char *name_end;
 		char *next_line;
 		int pin;
 		sensor temp_sensor;
@@ -117,11 +126,15 @@ int configure_sensors(char *config, sensor ***sensor_key)
 		/* isolate the sensor label and pin number */
 		label_end = strchr(line, '|');
 		*label_end = '\0';
-		pin = atoi(label_end + (sizeof(char) * 1));
+		name = label_end + 1;
+		name_end = strchr(name, '|');
+		*name_end = '\0';
+		
+		pin = atoi(name_end + (sizeof(char) * 1));
 
 		/* find sensor in table and build a new sensor interface */
 		temp_sensor = search_sensor(label);
-		(*sensor_key)[i] = build_sensor(label, temp_sensor.unit,
+		(*sensor_key)[i] = build_sensor(label, name, temp_sensor.unit,
 			temp_sensor.update, temp_sensor.type, pin);
 
 		/* jump to next line */
@@ -131,13 +144,19 @@ int configure_sensors(char *config, sensor ***sensor_key)
 	return sensor_count;	
 }
 
-data_msg build_msg(const char *label, const char *unit, unsigned long long timestamp, float data)
+// added name param to method signature to reflect changes to interface edits of build_msg
+data_msg build_msg(const char *label, const char *name, const char *unit, unsigned long long timestamp, float data)
 {
 	data_msg msg;
 	msg.label = malloc(strlen(label) + 1);
 	strcpy(msg.label, label);
+
+	msg.name = malloc(strlen(name) + 1);
+	strcpy(msg.name, name);
+
 	msg.unit = malloc(strlen(unit) + 1);
 	strcpy(msg.unit, unit);
+
 	msg.timestamp = timestamp;
 	msg.data = data;
 
@@ -147,6 +166,7 @@ data_msg build_msg(const char *label, const char *unit, unsigned long long times
 void destroy_msg(data_msg msg)
 {
 	free(msg.label);
+	free(msg.name); 
 	free(msg.unit);
 
 	return;
@@ -156,7 +176,7 @@ char *stringify_msg(data_msg new_msg)
 {
         /* i hope 256 bytes is enough */
         char *msg_string = malloc(256);
-        snprintf(msg_string, 256, "%s|%s|%llu|%f", new_msg.label, new_msg.unit, new_msg.timestamp, new_msg.data);
+        snprintf(msg_string, 256, "%s|%s|%s|%llu|%f", new_msg.label, new_msg.name, new_msg.unit, new_msg.timestamp, new_msg.data);
         
         return msg_string;
 }
