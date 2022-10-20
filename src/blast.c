@@ -218,7 +218,9 @@ int main(int argc, char **argv)
 	free(sensor_key);
 	mraa_i2c_stop(i2c);
 	mraa_deinit();
-	fclose(logfile);
-	umount("/mnt");
+	if (sd_exists) {
+		fclose(logfile);
+		umount("/mnt");
+	}
 	exit(1);
 }

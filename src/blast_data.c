@@ -13,7 +13,7 @@ sensor *build_sensor(char *label, char *name, char *unit, sensor_function update
 	new_sensor->label = malloc(strlen(label) + 1);
 	strcpy(new_sensor->label, label);
 
-	new_sensor->name = malloc(strlen(name)+1);
+	new_sensor->name = malloc(strlen(name) + 1);
 	strcpy(new_sensor->name, name);
 
 	new_sensor->unit = malloc(strlen(unit) + 1);
@@ -43,7 +43,7 @@ sensor *build_sensor(char *label, char *name, char *unit, sensor_function update
 void destroy_sensor(sensor *sensor)
 {
 	free(sensor->label);
-	free(sensor->name); // frees mem referenced by sensor->name
+	free(sensor->name);
 	free(sensor->unit);
 
 	switch (sensor->type) {
