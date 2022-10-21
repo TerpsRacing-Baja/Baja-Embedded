@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 
 			logfile = fopen(filename, "ab+");
 
-			fwrite("Label|Unit|Timestamp|Value\n", 27, 1, logfile);
+			fwrite("Label|Name|Unit|Timestamp|Value\n", 32, 1, logfile);
 		} else {
 			fprintf(stderr, "Failed to mount SD card\n");
 			sd_exists = 0;
