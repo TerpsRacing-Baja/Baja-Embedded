@@ -6,7 +6,6 @@
 #include "include/blast_data.h"
 #include "include/initialize.h"
 
-// added name char to reflect changes made build_sensor declaration in blast_data.h interface 
 sensor *build_sensor(char *label, char *name, char *unit, sensor_function update, sensor_type type, unsigned int pin)
 {
 	sensor *new_sensor = malloc(sizeof(sensor));
@@ -32,6 +31,8 @@ sensor *build_sensor(char *label, char *name, char *unit, sensor_function update
 		break;
 	case I2C:
 		init_i2c();
+		/* pin is used to populate mux selection field */
+		new_sensor->mux = pin;
 		break;
 	case TEST:
 		break;
@@ -119,7 +120,7 @@ int configure_sensors(char *config, sensor ***sensor_key)
 		int pin;
 		sensor temp_sensor;
 		
-		/* break off current line from sconfig string */
+		/* break off current line from config string */
 		next_line = strchr(line, '\n');
 		*next_line = '\0';
 
@@ -194,4 +195,9 @@ int send_msg(int sock, data_msg msg)
 
         free(msg_string);
         return 0;
+}
+
+void select_line(int mux)
+{
+	return;
 }
