@@ -160,6 +160,10 @@ int main(int argc, char **argv)
 			data_msg msg;
 			float update_data;
 
+			if (sensor_key[i]->type == I2C) {
+				select_line(sensor_key[i]->mux);
+			}
+
 			if (sensor_key[i]->update(&update_data, sensor_key[i]->context) < 0) {
 				printf("Sensor %s failed on update\n", sensor_key[i]->label);
 			} else {

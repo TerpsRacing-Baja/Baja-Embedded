@@ -36,11 +36,15 @@ typedef enum {
  * opaque structure describing a sensor interface.
  * sensors have a label, a unit, an update function, a type, and a pin context.
  * 
+ * additionally, if a sensor uses i2c, the mux field will be populated
+ * with its multiplexer selection address.
+ * 
  */
 typedef struct {
 	char *label;
 	char *name;
 	char *unit;
+	int mux;
 	sensor_function update;
 	sensor_type type;
 	mraa_context context;
@@ -122,5 +126,13 @@ char *stringify_msg(data_msg new_msg);
  * 
  */
 int send_msg(int sock, data_msg msg);
+
+/**
+ * given a multiplexer selection, enable that line using digital outs.
+ * 
+ * TODO: define which digital outs we will be using.
+ *  
+ */
+void select_line(int mux);
 
 #endif
