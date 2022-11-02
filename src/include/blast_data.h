@@ -130,9 +130,9 @@ int send_msg(int sock, data_msg msg);
 /**
  * given a multiplexer selection, enable that line using digital outs.
  * 
- * TODO: define which digital outs we will be using.
+ * this function will use pins 10, 11, 12, and 13 on the Intel Edison
  *  
  */
-void select_line(int mux);
+int select_line(int mux);
 
 #endif
