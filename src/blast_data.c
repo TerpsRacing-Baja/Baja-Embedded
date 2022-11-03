@@ -197,58 +197,29 @@ int send_msg(int sock, data_msg msg)
         return 0;
 }
 
-/* TODO: generate these contexts in main lmfao this boilerplate sucks */
 int select_line(int mux)
 {
-	mraa_gpio_context pin10, pin11, pin12, pin13;
+	mraa_gpio_context multi_pin;
+	int pins[] = {10, 11, 12, 13};
+	int out[] = {mux & 0b1, mux &0b10, mux & 0b100, mux & 0b1000};
 
-	/* we will be using digital pins 10, 11, 12, and 13 */
-	/* mountains of boilerplate !!!!! */
-	/* pretty sure there's a way to do this with init_multi, but meh*/
-	if (!(pin10 = mraa_gpio_init(10))) {
-		fprintf(stderr, "Failed to initialize GPIO pin 10\n");
+	/* initialize pins */
+	if ((multi_pin = mraa_gpio_init_multi(pins, 4)) == NULL) {
+		fprintf(stderr, "Failed to initialize GPIO pins 10, 11, 12, 13\n");
 		return -1;
 	}
 
-	if (!(pin11 = mraa_gpio_init(11))) {
-		fprintf(stderr, "Failed to initialize GPIO pin 11\n");
+	/* set pin directions */
+	if (mraa_gpio_dir(multi_pin, MRAA_GPIO_OUT) != MRAA_SUCCESS) {
+		fprintf(stderr, "Failed to set pins 10, 11, 12, 13 to GPIO_OUT\n");
+		return -1;
 	}
 
-	if (!(pin12 = mraa_gpio_init(12))) {
-		fprintf(stderr, "Failed to initialize GPIO pin 12\n");
-	}
-
-	if (!(pin13 = mraa_gpio_init(13))) {
-		fprintf(stderr, "Failed to initialize GPIO pin 13\n");
-	}
-
-	if (mraa_gpio_dir(pin10, MRAA_GPIO_OUT) != MRAA_SUCCESS) {
-		fprintf(stderr, "Failed to set GPIO pin 10 to output mode\n");
-	}
-
-	if (mraa_gpio_dir(pin11, MRAA_GPIO_OUT) != MRAA_SUCCESS) {
-		fprintf(stderr, "Failed to set GPIO pin 11 to output mode\n");
-	}
-
-	if (mraa_gpio_dir(pin12, MRAA_GPIO_OUT) != MRAA_SUCCESS) {
-		fprintf(stderr, "Failed to set GPIO pin 12 to output mode\n");
-	}
-
-	if (mraa_gpio_dir(pin13, MRAA_GPIO_OUT) != MRAA_SUCCESS) {
-		fprintf(stderr, "Failed to set GPIO pin 13 to output mode\n");
-	}
-
-	/* actually set outputs here lol */
-	mraa_gpio_write(pin10, mux & 0b1);
-	mraa_gpio_write(pin11, mux & 0b10);
-	mraa_gpio_write(pin12, mux & 0b100);
-	mraa_gpio_write(pin13, mux & 0b1000);
+	/* write values out to mux */
+	mraa_gpio_write_multi(multi_pin, out);
 
 	/* does this turn off the pins ? */
-	mraa_gpio_close(pin10);
-	mraa_gpio_close(pin11);
-	mraa_gpio_close(pin12);
-	mraa_gpio_close(pin13);
+	mraa_gpio_close(multi_pin);
 
-	return;
+	return 1;
 }
