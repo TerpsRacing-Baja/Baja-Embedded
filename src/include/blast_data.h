@@ -77,6 +77,12 @@ extern sensor sensor_table[];
 extern mraa_i2c_context i2c;
 
 /**
+ * shared GPIO contexts
+ * 
+ */
+extern mraa_gpio_context pin10, pin11, pin12, pin13;
+
+/**
  * allocate memory for a sensor given its components.
  * 
  */
