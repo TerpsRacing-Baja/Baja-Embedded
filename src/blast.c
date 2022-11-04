@@ -13,8 +13,9 @@
 #include "include/blast_data.h"
 #include "include/sensors.h"
 
-mraa_i2c_context i2c;	// shared i2c bus context
-int interrupt = 0;	// track signals for shutdown
+mraa_i2c_context i2c;				// shared i2c bus context
+mraa_gpio_context pin10, pin11, pin12, pin13;	// GPIO pins
+int interrupt = 0;				// track signals for shutdown
 
 void handle_signal(int sig_type)
 {
@@ -67,6 +68,39 @@ int main(int argc, char **argv)
 			fprintf(stderr, "profound meditation: failed to initialize i2c-6 bus\n");
 			mraa_deinit();
 			exit(-1);
+		}
+
+		/* we will be using digital pins 10, 11, 12, and 13 */
+		if (!(pin10 = mraa_gpio_init(10))) {
+			fprintf(stderr, "Failed to initialize GPIO pin 10\n");
+		}
+
+		if (!(pin11 = mraa_gpio_init(11))) {
+			fprintf(stderr, "Failed to initialize GPIO pin 11\n");
+		}
+
+		if (!(pin12 = mraa_gpio_init(12))) {
+			fprintf(stderr, "Failed to initialize GPIO pin 12\n");
+		}
+
+		if (!(pin13 = mraa_gpio_init(13))) {
+			fprintf(stderr, "Failed to initialize GPIO pin 13\n");
+		}
+
+		if (mraa_gpio_dir(pin10, MRAA_GPIO_OUT) != MRAA_SUCCESS) {
+			fprintf(stderr, "Failed to set GPIO pin 10 to output mode\n");
+		}
+
+		if (mraa_gpio_dir(pin11, MRAA_GPIO_OUT) != MRAA_SUCCESS) {
+			fprintf(stderr, "Failed to set GPIO pin 11 to output mode\n");
+		}
+
+		if (mraa_gpio_dir(pin12, MRAA_GPIO_OUT) != MRAA_SUCCESS) {
+			fprintf(stderr, "Failed to set GPIO pin 12 to output mode\n");
+		}
+
+		if (mraa_gpio_dir(pin13, MRAA_GPIO_OUT) != MRAA_SUCCESS) {
+			fprintf(stderr, "Failed to set GPIO pin 13 to output mode\n");
 		}
 	#endif
 
@@ -221,6 +255,10 @@ int main(int argc, char **argv)
 
 	free(sensor_key);
 	mraa_i2c_stop(i2c);
+	mraa_gpio_close(pin10);
+	mraa_gpio_close(pin11);
+	mraa_gpio_close(pin12);
+	mraa_gpio_close(pin13);
 	mraa_deinit();
 	if (sd_exists) {
 		fclose(logfile);
