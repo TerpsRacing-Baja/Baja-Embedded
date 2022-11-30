@@ -110,7 +110,7 @@ int configure_sensors(char *config, sensor ***sensor_key)
 	/* initialize sensor key */
 	*sensor_key = malloc(sizeof(sensor *) * sensor_count);
 
-	/* parse line of format "string|integer" */
+	/* parse line of format "string|string|integer" */
 	for (i = 0; i < sensor_count; ++i) {
 		char *label = line;
 		char *label_end;
