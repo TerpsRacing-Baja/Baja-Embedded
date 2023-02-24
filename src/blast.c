@@ -17,6 +17,7 @@ mraa_i2c_context i2c;				// shared i2c bus context
 mraa_gpio_context pin10, pin11, pin12, pin13;	// GPIO pins
 int interrupt = 0;				// track signals for shutdown
 
+/* handle sigint or sigterm by setting interrupt to true */
 void handle_signal(int sig_type)
 {
 	if (sig_type == SIGINT || sig_type == SIGTERM) {
@@ -179,7 +180,7 @@ int main(int argc, char **argv)
 		FILE *config_file = fopen("./configuration", "r");
 		fread(config, 1, 5096, config_file);
 	}
-	
+
 	/* perform dynamic sensor configuration */
 	num = configure_sensors(config, &sensor_key);
 	free(config);
@@ -260,9 +261,11 @@ int main(int argc, char **argv)
 	mraa_gpio_close(pin12);
 	mraa_gpio_close(pin13);
 	mraa_deinit();
+
 	if (sd_exists) {
 		fclose(logfile);
 		umount("/mnt");
 	}
+
 	exit(1);
 }

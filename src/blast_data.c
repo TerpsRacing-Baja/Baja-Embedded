@@ -96,17 +96,6 @@ int configure_sensors(char *config, sensor ***sensor_key)
 		++i;
 	}
 
-	/**
-	 * 
-	 * i need to query the racecapture here in order to find out
-	 * how many sensors it hosts, and their information.
-	 * 
-	 * afterwards, i need to add that info to a separate data structure,
-	 * and initialize the mcp2515 in the sensor key. note that there
-	 * is some special behavior for the mcp2515 "sensor"!
-	 * 
-	 */
-
 	/* initialize sensor key */
 	*sensor_key = malloc(sizeof(sensor *) * sensor_count);
 
@@ -119,7 +108,7 @@ int configure_sensors(char *config, sensor ***sensor_key)
 		char *next_line;
 		int pin;
 		sensor temp_sensor;
-		
+
 		/* break off current line from config string */
 		next_line = strchr(line, '\n');
 		*next_line = '\0';
@@ -130,7 +119,7 @@ int configure_sensors(char *config, sensor ***sensor_key)
 		name = label_end + 1;
 		name_end = strchr(name, '|');
 		*name_end = '\0';
-		
+
 		pin = atoi(name_end + (sizeof(char) * 1));
 
 		/* find sensor in table and build a new sensor interface */
@@ -142,10 +131,9 @@ int configure_sensors(char *config, sensor ***sensor_key)
 		line = next_line + (sizeof(char) * 1);
 	}
 
-	return sensor_count;	
+	return sensor_count;
 }
 
-// added name param to method signature to reflect changes to interface edits of build_msg
 data_msg build_msg(const char *label, const char *name, const char *unit, unsigned long long timestamp, float data)
 {
 	data_msg msg;
@@ -167,7 +155,7 @@ data_msg build_msg(const char *label, const char *name, const char *unit, unsign
 void destroy_msg(data_msg msg)
 {
 	free(msg.label);
-	free(msg.name); 
+	free(msg.name);
 	free(msg.unit);
 
 	return;
@@ -178,7 +166,7 @@ char *stringify_msg(data_msg new_msg)
         /* i hope 256 bytes is enough */
         char *msg_string = malloc(256);
         snprintf(msg_string, 256, "%s|%s|%s|%llu|%f", new_msg.label, new_msg.name, new_msg.unit, new_msg.timestamp, new_msg.data);
-        
+
         return msg_string;
 }
 
