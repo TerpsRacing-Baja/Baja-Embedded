@@ -26,4 +26,9 @@ int main(void) {
     pthread_create(&file_write, &tattr, start_fw, (void*) &pth_args);
 
     // free lock array and join threads 
+    (void) pthread_join(sensor_process, NULL);
+    (void) pthread_join(rc_process, NULL);
+    (void) pthread_join(file_write, NULL);
+    
+    free(lock_arr);
 }
