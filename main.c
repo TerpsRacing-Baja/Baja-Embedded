@@ -1,6 +1,12 @@
-#include "p_thread_args.h"
 #include <stdlib.h>
+#include <pthread.h>
 
+#include "p_thread_args.h"
+#include "car_model.h"
+#include "locks.h"
+#include "race_capture.h"
+
+#define SENSOR_COUNT 20
 
 void *start_sp(void *p_)
 {
@@ -20,7 +26,11 @@ void *start_fw(void *p_)
 int main(void)
 {
     car_model cm;
-    locks lock_arr = malloc(20);
+    locks lock_arr = malloc(SENSOR_COUNT);
+
+    for (int i = 0; i < SENSOR_COUNT; ++i) {
+	pthread_mutex_init(&lock_arr[i], NULL);
+    }
 
     args pth_args= {&cm, lock_arr};
 
@@ -36,6 +46,10 @@ int main(void)
     pthread_join(sensor_process, NULL);
     pthread_join(rc_process, NULL);
     pthread_join(file_write, NULL);
+
+    for (int i = 0; i < SENSOR_COUNT; ++i) {
+	pthread_mutex_destroy(&lock_arr[i]);
+    }
 
     free(lock_arr);
 }
