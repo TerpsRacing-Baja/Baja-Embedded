@@ -1,10 +1,7 @@
 #include <stdlib.h>
 #include <pthread.h>
-
-#include "p_thread_args.h"
-#include "car_model.h"
-#include "locks.h"
-#include "race_capture.h"
+#include <time.h>
+#include "include/threading.h"
 
 #define SENSOR_COUNT 20
 
@@ -42,7 +39,7 @@ int main(void)
     pthread_create(&rc_process, &tattr, start_rc, (void*) &pth_args);
     pthread_create(&file_write, &tattr, start_fw, (void*) &pth_args);
 
-    // free lock array and join threads
+    /* free lock array and join threads */
     pthread_join(sensor_process, NULL);
     pthread_join(rc_process, NULL);
     pthread_join(file_write, NULL);
