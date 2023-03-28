@@ -1,20 +1,15 @@
 #ifndef THREADING_H
 #define THREADING_H
 
-typedef struct
-{
-    /* data */
-} sensor;
+#include "include/blast_data.h"
 
-typedef struct
-{
+typedef struct {
     /* data */
 } race_capture;
 
-typedef struct
-{
+typedef struct {
     race_capture *rc;
-    sensor * sens;
+    sensor **sensor_key;
 } car_model;
 
 typedef struct {

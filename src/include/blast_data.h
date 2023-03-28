@@ -34,7 +34,8 @@ typedef enum {
 
 /**
  * opaque structure describing a sensor interface.
- * sensors have a label, a name, a unit, an update function, a type, and a pin context.
+ * sensors have a label, a name, a unit, an update function, a most recent
+ * value, a type, and a pin context.
  *
  * additionally, if a sensor uses i2c, the mux field will be populated
  * with its multiplexer selection address.
@@ -45,6 +46,7 @@ typedef struct {
 	char *name;
 	char *unit;
 	int mux;
+	float val;
 	sensor_function update;
 	sensor_type type;
 	mraa_context context;
