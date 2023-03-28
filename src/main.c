@@ -10,9 +10,12 @@ void *start_sp(void *p_)
 
 }
 
+/* AGA: the racecapture is an event loop, the lifecycle is specified here for
+ * clarity, while the code is in a separate file for brevity
+ */
 void *start_rc(void *p_)
 {
-
+    // TODO: AGA still writing the actual racecapture logic
 }
 
 void *start_fw(void *p_)
