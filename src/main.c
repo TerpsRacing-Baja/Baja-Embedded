@@ -26,8 +26,11 @@ static void *start_rc(void *p)
 
 }
 
-/* AGA: the racecapture is an event loop, the lifecycle is specified here for
+/* The racecapture is an event loop, the lifecycle is specified here for
  * clarity, while the code is in a separate file for brevity
+ * @author AGA
+ * @param p_ pthreads function, meant to be a pointer to an argument structure
+ * @return required by pthreads, will not be a meaningful value
  */
 void *start_rc(void *p)
 {
@@ -65,6 +68,8 @@ int main(void)
     pthread_create(&sensor_process, &tattr, start_sp, (void *) &pth_args);
     pthread_create(&rc_process, &tattr, start_rc, (void *) &pth_args);
     pthread_create(&file_write, &tattr, start_fw, (void *) &pth_args);
+
+    // AGA: TODO add some kind of signal to kill any infinite loops beforehand
 
     /* free lock array and join threads */
     pthread_join(sensor_process, NULL);
