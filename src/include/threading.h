@@ -14,7 +14,7 @@ typedef struct {
 
 typedef struct {
     car_model *cm;
-    locks lkarr;
+    locks lock_array;
 } args;
 
 typedef pthread_mutex_t * locks;

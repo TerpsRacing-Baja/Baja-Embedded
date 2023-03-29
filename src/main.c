@@ -7,16 +7,21 @@
 
 #define SENSOR_COUNT 20
 
-static void *start_sp(void *args)
+static void *start_sp(void *p)
 {
+    args *args = p;
+
     for (;;) {
         for (int i = 0; i < SENSOR_COUNT; ++i) {
-
+            pthread_mutex_lock(&args->lock_array[i]);
+            sensor *sens = args->cm->sensor_key[i];
+            sens->update(&sens->val, sens->context);
+            pthread_mutex_unlock(&args->lock_array[i]);
         }
     }
 }
 
-static void *start_rc(void *args)
+static void *start_rc(void *p)
 {
 
 }
@@ -24,7 +29,7 @@ static void *start_rc(void *args)
 /* AGA: the racecapture is an event loop, the lifecycle is specified here for
  * clarity, while the code is in a separate file for brevity
  */
-void *start_rc(void *p_)
+void *start_rc(void *p)
 {
     // TODO: AGA still writing the actual racecapture logic
 }
