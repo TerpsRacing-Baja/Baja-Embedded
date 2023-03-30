@@ -1,0 +1,23 @@
+version: "3.9"
+
+services:
+  baja-edison-testing:
+    # Change this to rename the image
+    image: baja-edison-env:latest
+
+    # These settings allow for opening an interactive shell
+    stdin_open: true
+    tty: true
+
+    volumes:
+      # Using a bind mount for simplicity, copy the entire directory
+      # Note that this is like a shared folder, any changes made in the docker
+      # container will be reflected on the host
+      - type: bind
+        source: .
+        target: /root/baja-embedded
+
+    build:
+      # Dockerfile is stored in subfolder environment, so you can use 
+      # `docker compose build` to make or update the image
+      context: ./environment
