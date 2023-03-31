@@ -12,11 +12,11 @@ typedef struct {
     sensor **sensor_key;
 } car_model;
 
+typedef pthread_mutex_t * locks;
+
 typedef struct {
     car_model *cm;
     locks lock_array;
 } args;
-
-typedef pthread_mutex_t * locks;
 
 #endif

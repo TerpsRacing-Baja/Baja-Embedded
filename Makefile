@@ -18,4 +18,4 @@ DEP_FILES = $(OBJ_FILES:%.o=%.d)
 -include $(DEP_FILES)
 
 blast: $(OBJ_FILES)
-	gcc -o $(BUILD_DIR)/blast $(OBJ_FILES) -lmraa -std=c11 -Os
+	gcc -o $(BUILD_DIR)/blast $(OBJ_FILES) -lmraa -lpthread -std=c11 -Os

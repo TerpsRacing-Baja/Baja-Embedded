@@ -21,11 +21,6 @@ static void *start_sp(void *p)
     }
 }
 
-static void *start_rc(void *p)
-{
-
-}
-
 /* The racecapture is an event loop, the lifecycle is specified here for
  * clarity, while the code is in a separate file for brevity
  * @author AGA
