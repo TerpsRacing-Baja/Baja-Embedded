@@ -13,4 +13,4 @@ RUN apt-get install -y mraa-tools mraa-examples libmraa2 libmraa-dev libupm-dev 
 RUN apt-get install -y python-mraa python3-mraa libmraa-java
 
 # Add development conveniences below
-RUN apt-get install -y gcc
+RUN apt-get install -y gcc make
