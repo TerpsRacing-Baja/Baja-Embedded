@@ -1,11 +1,17 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include <time.h>
+#include <unistd.h>
+#include <sys/mount.h>
 #include "include/blast_data.h"
 #include "include/threading.h"
 #include "include/sensors.h"
 
 #define SENSOR_COUNT 20
+
+mraa_i2c_context i2c;
+mraa_gpio_context pin10, pin11, pin12, pin13;
 
 static void *start_sp(void *p)
 {
@@ -34,7 +40,35 @@ void *start_rc(void *p)
 
 static void *start_fw(void *args)
 {
+    int sd_exists;
+    char filename[70] = "/mnt";
+    FILE *logfile;
 
+    /* do an access and mount sd if it exists */
+	/* open file based on datetime */
+	if (access("/dev/mmcblk1p1", W_OK) == 0) {
+		sd_exists = 1;
+		if (mount("/dev/mmcblk1p1", "/mnt", "vfat", MS_NOATIME, NULL) == 0) {
+			time_t raw_time;
+			time(&raw_time);
+			struct tm *tm = localtime(&raw_time);
+			strftime(filename + 5, sizeof(filename) - 5, "%Y-%m-%d_%H-%M-%S", tm);
+
+			logfile = fopen(filename, "ab+");
+
+			fwrite("Label|Name|Unit|Timestamp|Value\n", 32, 1, logfile);
+		} else {
+			fprintf(stderr, "Failed to mount SD card\n");
+			sd_exists = 0;
+		}
+	} else {
+		sd_exists = 0;
+	}
+
+    for (;;) {
+
+        sleep(1);
+    }
 }
 
 int main(void)
