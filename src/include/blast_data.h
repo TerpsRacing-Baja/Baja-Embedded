@@ -6,6 +6,12 @@
 #include <mraa.h>
 
 /**
+ * milliseconds
+ *
+*/
+#define SAMPLE_PERIOD 100
+
+/**
  * any of the three relevant mraa contexts.
  * these are defined as void * by mraa anyway, so this is just
  * a typing convenience for passing contexts around
@@ -86,6 +92,12 @@ extern mraa_i2c_context i2c;
  *
  */
 extern mraa_gpio_context pin10, pin11, pin12, pin13;
+
+/**
+ * global seed value for test sensor value generation
+ *
+ */
+extern unsigned int r_seed;
 
 /**
  * allocate memory for a sensor given its components.

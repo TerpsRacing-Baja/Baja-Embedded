@@ -10,6 +10,7 @@ typedef struct {
 typedef struct {
     race_capture *rc;
     sensor **sensor_key;
+    int num_sensors;
 } car_model;
 
 typedef pthread_mutex_t * locks;
