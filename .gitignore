@@ -35,6 +35,8 @@
 *.i*86
 *.x86_64
 *.hex
+# Custom, defined by AGA (justification -> I like it)
+*.run
 
 # Debug files
 *.dSYM/
@@ -51,5 +53,5 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-# Jason added this
-build/
+# Asher likes his dev tools
+.vscode/*
