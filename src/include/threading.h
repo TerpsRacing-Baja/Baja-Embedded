@@ -1,6 +1,7 @@
 #ifndef THREADING_H
 #define THREADING_H
 
+#include <pthread.h>
 #include "include/blast_data.h"
 
 typedef struct {
@@ -13,11 +14,9 @@ typedef struct {
     int num_sensors;
 } car_model;
 
-typedef pthread_mutex_t * locks;
-
 typedef struct {
     car_model *cm;
-    locks lock_array;
+    pthread_mutex_t *lock_array;
 } args;
 
 #endif

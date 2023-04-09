@@ -122,8 +122,11 @@ static void *start_fw(void *p)
 
 int main(void)
 {
-    car_model cm;
-    locks lock_arr = malloc(SENSOR_COUNT);
+    car_model cm;                                       // shared model of the car's state
+    pthread_mutex_t *lock_arr = malloc(SENSOR_COUNT);   // array of mutexes for edison sensors
+    pthread_t sensor_process, rc_process, file_write;   // thread variables
+    pthread_attr_t tattr;                               // thread attributes (we don't use)
+    args pth_args= {&cm, lock_arr};                     // argument passed into each thread
 
     /* initialize sensor array */
     /* just hard-code test sensors for now */
@@ -139,10 +142,6 @@ int main(void)
 	    pthread_mutex_init(&lock_arr[i], NULL);
     }
 
-    args pth_args= {&cm, lock_arr};
-
-    pthread_t sensor_process, rc_process, file_write;
-    pthread_attr_t tattr;
     pthread_attr_init(&tattr);
 
     pthread_create(&sensor_process, &tattr, start_sp, (void *) &pth_args);
