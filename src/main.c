@@ -10,6 +10,7 @@
 #include "include/blast_data.h"
 #include "include/threading.h"
 #include "include/sensors.h"
+#include "include/racecapture_interface.h"
 
 #define SENSOR_COUNT 20
 
@@ -40,12 +41,22 @@ static void *start_sp(void *p)
 /* The racecapture is an event loop, the lifecycle is specified here for
  * clarity, while the code is in a separate file for brevity
  * @author AGA
- * @param p_ pthreads function, meant to be a pointer to an argument structure
+ * @param p pthreads function, meant to be a pointer to an argument structure
  * @return required by pthreads, will not be a meaningful value
  */
 void *start_rc(void *p)
 {
-    // TODO: AGA still writing the actual racecapture logic
+    int init_succeeded;
+    args *args = p;
+
+    init_succeeded = !rc_serial_init(); // side effect of actually doing the initialization
+
+    if (init_succeeded) 
+    {
+        rc_serial_read_loop(args[0].cm->rc);
+    } 
+    else
+        fprintf(stderr, "[RC-THREAD]: UART initialization FAILED .. racecapture thread ended");
 }
 
 static void *start_fw(void *p)
