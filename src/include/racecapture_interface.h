@@ -1,6 +1,8 @@
 #ifndef RACECAPTURE_H
 #define RACECAPTURE_H
 
+#include "threading.h"
+
 #define START_FLAG 0xF0
 #define END_FLAG 0XC5
 
