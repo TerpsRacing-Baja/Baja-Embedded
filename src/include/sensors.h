@@ -1,5 +1,5 @@
 #ifndef SENSORS_H
-#define SENSORs_H
+#define SENSORS_H
 
 #include "include/blast_data.h"
 
