@@ -1,5 +1,6 @@
 #include <mraa.h>
 #include "include/threading.h" // for car model
+#include "include/racecapture_sitl.h"
 
 #ifndef TESTING
 static mraa_uart_context uart_contex;
@@ -24,6 +25,6 @@ void rc_serial_read_loop(race_capture *rc_data) {
 
 static uint8_t read_byte(void) {
     #ifdef TESTING
-        
+    return sitl_read_byte();
     #endif
 }
