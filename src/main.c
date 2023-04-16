@@ -110,6 +110,7 @@ static void *start_fw(void *p)
                     ((unsigned long long)tp.tv_sec * 1000) + (tp.tv_usec / 1000),
                     sensor_key[i]->val);
 
+            pthread_mutex_unlock(&args->lock_array[i]);
             char *msg_string = stringify_msg(msg);
 
             #ifdef DEBUG
@@ -124,7 +125,7 @@ static void *start_fw(void *p)
             }
 
             free(msg_string);
-            pthread_mutex_unlock(&args->lock_array[i]);
+    
         }
 
         nanosleep(&req, NULL);
