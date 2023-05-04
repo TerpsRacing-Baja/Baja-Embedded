@@ -12,8 +12,6 @@
 #include "include/sensors.h"
 #include "include/racecapture_interface.h"
 
-#define SENSOR_COUNT 20
-
 mraa_i2c_context i2c;
 mraa_gpio_context pin10, pin11, pin12, pin13;
 
@@ -51,10 +49,10 @@ void *start_rc(void *p)
 
     init_succeeded = !rc_serial_init(); // side effect of actually doing the initialization
 
-    if (init_succeeded) 
+    if (init_succeeded)
     {
-        rc_serial_read_loop(args[0].cm->rc);
-    } 
+        rc_serial_read_loop(args->cm->rc);
+    }
     else
         fprintf(stderr, "[RC-THREAD]: UART initialization FAILED .. racecapture thread ended");
 }
@@ -97,6 +95,7 @@ static void *start_fw(void *p)
 
     #ifdef DEBUG
         printf("[FILE-WRITE THREAD] data collection loop:\n");
+        fflush(stdout);
     #endif
 
     /* acquire and save current values from everything in the car model according to sample period */
@@ -125,7 +124,7 @@ static void *start_fw(void *p)
             }
 
             free(msg_string);
-    
+
         }
 
         nanosleep(&req, NULL);
@@ -135,26 +134,80 @@ static void *start_fw(void *p)
 int main(void)
 {
     car_model cm;                                       // shared model of the car's state
-    pthread_mutex_t *lock_arr = malloc(SENSOR_COUNT);   // array of mutexes for edison sensors
+    pthread_mutex_t *lock_arr;                          // array of mutexes for edison sensors
     pthread_t sensor_process, rc_process, file_write;   // thread variables
     pthread_attr_t tattr;                               // thread attributes (we don't use)
-    args pth_args= {&cm, lock_arr};                     // argument passed into each thread
+    args pth_args;                                      // argument passed into each thread
+    FILE *config_file;                                  // pointer to confguration file
+    char *config = malloc(5096);                        // buffer for holding config info
 
-    /* initialize sensor array */
-    /* just hard-code test sensors for now */
-    cm.sensor_key = malloc(sizeof(sensor *) * SENSOR_COUNT);
+    // TODO: threaded signal handling (sigint, sigterm, killing threads)
 
-    for (int i = 0; i < SENSOR_COUNT; ++i) {
-	    cm.sensor_key[i] = build_sensor("TEST", "TEST", "TESTIES", test_sensor, TEST, 0);
-    }
+    /* create an i2c context for the edison - exposed on bus 6 */
+    i2c = mraa_i2c_init(6);
 
-    cm.num_sensors = SENSOR_COUNT;
+    /* pin initializations - only runs if compiling on edison platform */
+    #ifndef TESTING
+	    if (i2c == NULL) {
+			fprintf(stderr, "profound meditation: failed to initialize i2c-6 bus\n");
+			mraa_deinit();
+			exit(-1);
+		}
+
+		/* we will be using digital pins 10, 11, 12, and 13 */
+		if (!(pin10 = mraa_gpio_init(10))) {
+			fprintf(stderr, "Failed to initialize GPIO pin 10\n");
+		}
+
+		if (!(pin11 = mraa_gpio_init(11))) {
+			fprintf(stderr, "Failed to initialize GPIO pin 11\n");
+		}
+
+		if (!(pin12 = mraa_gpio_init(12))) {
+			fprintf(stderr, "Failed to initialize GPIO pin 12\n");
+		}
+
+		if (!(pin13 = mraa_gpio_init(13))) {
+			fprintf(stderr, "Failed to initialize GPIO pin 13\n");
+		}
+
+		if (mraa_gpio_dir(pin10, MRAA_GPIO_OUT) != MRAA_SUCCESS) {
+			fprintf(stderr, "Failed to set GPIO pin 10 to output mode\n");
+		}
+
+		if (mraa_gpio_dir(pin11, MRAA_GPIO_OUT) != MRAA_SUCCESS) {
+			fprintf(stderr, "Failed to set GPIO pin 11 to output mode\n");
+		}
+
+		if (mraa_gpio_dir(pin12, MRAA_GPIO_OUT) != MRAA_SUCCESS) {
+			fprintf(stderr, "Failed to set GPIO pin 12 to output mode\n");
+		}
+
+		if (mraa_gpio_dir(pin13, MRAA_GPIO_OUT) != MRAA_SUCCESS) {
+			fprintf(stderr, "Failed to set GPIO pin 13 to output mode\n");
+		}
+	#endif
+
+    /* read sensor configuration information from config file */
+    // TODO: flash config via usb serial (not a code task tho lol)
+    config_file = fopen("./configuration", "r");
+    fread(config, 1, 5096, config_file);
+
+    cm.num_sensors = configure_sensors(config, &cm.sensor_key);
+    free(config);
+
+    /* initialize locks */
+    lock_arr = malloc(sizeof(pthread_mutex_t) * cm.num_sensors);
 
     for (int i = 0; i < cm.num_sensors; ++i) {
 	    pthread_mutex_init(&lock_arr[i], NULL);
     }
 
     pthread_attr_init(&tattr);
+
+    /* load pthread arguments */
+    pth_args.cm = &cm;
+    pth_args.lock_array = lock_arr;
 
     pthread_create(&sensor_process, &tattr, start_sp, (void *) &pth_args);
     pthread_create(&rc_process, &tattr, start_rc, (void *) &pth_args);
