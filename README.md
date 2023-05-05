@@ -1,27 +1,36 @@
-# Threading
+# Baja-Embedded
 
-## Introduction
+This repository contains all of the code used for Terps Racing Baja Crew embedded systems.
+It is maintained by the Electronics and Testing subteam.
 
-We need to switch to a threaded architecture in order to scale our embedded system. The primary purpose of this project is to put RaceCapture message reception, sensor update polling, and log file writes on separate threads. This will allow us to refresh more rapidly and deal with data as we need it, rather than blocking every time we want to update.
+Currently, the repo contains in-development code for the car's on-board computer and data
+collection system. The client code "blast" is designed to interface with a webserver
+configured to display a live feed of car diagnostics.
 
-Do not worry about fully porting the existing functionality to this branch - we are primarily concerned with creating a template for the threaded redesign that we can guarantee works correctly. Until we have verified that concurrency works as expected, we shouldn't be working with hardware. This will at some point require building out a software-based testing suite.
+## Code Organization
 
-This repo is empty, but feel free to borrow header files as needed to properly implement things like sensor objects. We will worry about properly merging new code once the project is complete.
+The sensors installed on the Baja car are subject to change at any time, so our embedded system is designed to be configured dynamically. It deals with `sensor` structures that store the data associated with an individual, physical sensor on the car. At startup, a configuration file specifying the sensors on the car and their hardware port assignments is used to construct a list of sensors that can be polled continuously for data acquisition. The format for this configuration file is described later in this document.
 
-## Specifications
+The main looping structure of the embedded system lives in [src/main.c](src/main.c). This file contains boilerplate for setting up our hardware interfaces (we use Intel's [LibMRAA](https://iotdk.intel.com/docs/master/mraa/)) and calls to helper functions that construct an array of `sensor` objects from the configuration, in addition to the looping data acquisition logic. Note that data acquisition, and data logging happen in different threads. Helper functions for data structure creation, configuration parsing, and data formatting can be found in [src/blast_data.c](src/blast_data.c).
 
-Central to this redesign is the idea of a car model. We would like to model the "state" of the car at any time in software. This model of the car should be updated asynchronously by our threads so that it is always the most current. Access to the model should be mediated by mutexes, and ideally through an opaque interface of getters and setters. Consider the following structure as a starting point:
-```c
-typedef struct {
-	sensor *sensor_list;
-	gyro rc_gyro;
-	accel rc_accel;
-	gps rc_gps;
-	...
-} car;
+Individual update functions must be created for every sensor we put on the car. These use LibMRAA to interface with analog, digital, or I2C sensors and retrieve an updated sensor value. They may also perform scaling or mathematical operations as appropriate in order to prepare data to be processed later. Every update function has its own file in [src/sensors/](src/sensors/). We use function pointers to associate a given update function with a sensor object - see [src/sensor_table.c](src/sensor_table.c) for our jump table format and [src/include/blast_data.h](src/include/blast_data.h) for type and structure definitions.
+
+All C files have in-line comments describing the granular behavior of functions. For overall explanations of function purposes and behavior, please reference the [include files](src/include/).
+
+## Configuration File Format
+
+A sensor configuration file has the following format:
 ```
-Only the `sensor` type is currently implemented, while the other fields are just examples. You will have to determine the best way to associate (ie, structures) and store information associated with sensors on the car, which will require some understanding of the hardware involved.
+SENSOR MODEL (as in jump table)|USER-DEFINED SENSOR NAME|SENSOR DIGITAL OR ANALOG PIN (or mux pin if I2C)
+...
+...
+```
+It should contain as many lines as there are sensors on the car.
 
-Ideally, a reference to this car model will be shared between all threads that need access to it. As such, there should also be a related structure that stores mutexes for each field of the model. This will allow for thread-safe reading and writing.
+## Compilation
 
-The specific behavior of each thread is a concern for after the basic data and threading models have been created.
+We use an Intel Edison for our embedded system, so our compilation target is Intel x86, 64-bit. Typically we will compile the binary directly on the board, so cross-compilation is not an issue. We use Make as our build system (see [the Makefile](Makefile)).
+
+There are two compilation flags that a user may be interested in. We use `TESTING` when compiling for some target other than the Edison, for which accessing certain features of LibMRAA may cause undefined behavior. We also use `DEBUG` for comprehensive printed data at runtime. Examples of how these flags are used to guard compilation can be seen throughout the source, and we compile with them by doing something like `make all CFLAGS="-DTESTING -DDEBUG"`.
+
+Make sure to delete the build directory before pushing a commit. Or, write an ignore file so that it isn't an issue and merge it in.
