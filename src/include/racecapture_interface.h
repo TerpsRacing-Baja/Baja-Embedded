@@ -8,11 +8,9 @@
 
 typedef enum {
     READY;
-    GET_START_FLAG;
     GET_NUM;
     GET_SENSOR;
     GET_END_FLAG;
-    UNSUCCESSFUL_READ
 } states;
 
 int rc_serial_init(void);

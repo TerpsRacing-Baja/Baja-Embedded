@@ -29,18 +29,41 @@ int rc_serial_init(void) {
  * @author AGA
  */
 void rc_serial_read_loop(race_capture *rc_data) {
+    states curr_state= READY;
+    char *tot_sensor_data;
+    int num_sensors;
+
     for (;;) {
-        char *start_flag_buf= malloc(1);
-        if (mraa_uart_read(uart_contex, start_flag_buf, 1) && *start_flag_buf == START_FlAG) {
-            /* read number of sensors */
-            char *num_sensors_buf= realloc(start_flag_buf, 1);
-            if (mraa_uart_read(uart_contex, num_sensors_buf, 1) && *num_sensors_buf <= 15) {
-                int num_sensors= *num_sensors_buf;
-                char *sensor_buf= realloc(num_sensors_buf, 4);
-                char *tot_sensor_data= malloc(4 * num_sensors);
+        switch(curr_state) {
+            case READY: 
+                char *start_flag_buf= malloc(1);
+                if (mraa_uart_read(uart_contex, start_flag_buf, 1) && *start_flag_buf == START_FlAG) {
+                    curr_state= GET_NUM;
+                }
+                else {
+                    printf("No expected start flag.\n");
+                }
+                free(start_flag_buf);
+                break;
+
+            case GET_NUM:
+                char *num_sensors_buf= malloc(1);
+                if (mraa_uart_read(uart_contex, num_sensors_buf, 1) && *num_sensors_buf <= 15) {
+                    num_sensors= *num_sensors_buf;
+                    curr_state= GET_SENSOR;
+                }
+                else {
+                    printf("No expected number of sensors.\n");
+                    curr_state= READY;
+                }
+                free(num_sensors_buf);
+                break;
+            
+            case GET_SENSOR:
+                char *sensor_buf= malloc(4);
                 int read_unsuccessful= 0;
                 int i= 0;
-
+                tot_sensor_data= malloc(4 * num_sensors);
                 while (i < num_sensors && !read_unsuccessful) {
                     if (mraa_uart_read(uart_contex, sensor_buf, 4) == 4) {
                         strncpy(tot_sensor_data + (i*4), sensor_buf, 4);
@@ -50,34 +73,31 @@ void rc_serial_read_loop(race_capture *rc_data) {
                     else {
                         read_unsuccessful= 1;
                     }
-
                 }
+
                 if (read_unsuccessful) {
                     printf("Unsuccessful read of sensor %d of %d sensors.\n", i, num_sensors);
-                    free(sensor_buf);
                     free(tot_sensor_data);
+                    curr_state= READY;
                 }
                 else {
-                    char *end_flag_buf= realloc(sensor_buf, 1);         /* may cause memory leaks, haven't used realloc too much */
-                    if (mraa_uart_read(uart_contex, end_flag_buf, 1) && *end_flag_buf == END_FLAG) {
-                        /* thread-safe write of data in tot_sensor_data buffer */
-                    }
-                    else {
-                        printf("No expected end flag.\n")
-                        free(tot_sensor_data);
-                    }
-                    free(end_flag_buf);
+                    curr_state= GET_END_FLAG;
                 }
-            }
-            else {
-                printf("No expected number of sensors.\n");
-                free(num_sensors_buf);
-            }
-        }
-
-        else {
-            printf("No expected start flag.\n");
-            free(start_flag_buf);
+                free(sensor_buf);
+                break;
+            
+            case GET_END_FLAG:
+                char *end_flag_buf= malloc(1);
+                if (mraa_uart_read(uart_contex, end_flag_buf, 1) && *end_flag_buf == END_FLAG) {
+                    /* thread-safe write of data in tot_sensor_data buffer */
+                }
+                else {
+                    printf("No expected end flag.\n");
+                    free(tot_sensor_data);
+                }
+                free(end_flag_buf);
+                curr_state= READY;
+                break;
         } 
     }
 }
