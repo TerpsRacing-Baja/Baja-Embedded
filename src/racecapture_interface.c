@@ -36,27 +36,25 @@ void rc_serial_read_loop(race_capture *rc_data) {
     for (;;) {
         switch(curr_state) {
             case READY: 
-                char *start_flag_buf= malloc(1);
-                if (mraa_uart_read(uart_contex, start_flag_buf, 1) && *start_flag_buf == START_FlAG) {
+                char start_flag_buf;
+                if (mraa_uart_read(uart_contex, &start_flag_buf, 1) && start_flag_buf == START_FlAG) {
                     curr_state= GET_NUM;
                 }
                 else {
                     printf("No expected start flag.\n");
                 }
-                free(start_flag_buf);
                 break;
 
             case GET_NUM:
-                char *num_sensors_buf= malloc(1);
-                if (mraa_uart_read(uart_contex, num_sensors_buf, 1) && *num_sensors_buf <= 15) {
-                    num_sensors= *num_sensors_buf;
+                char num_sensors_buf;
+                if (mraa_uart_read(uart_contex, &num_sensors_buf, 1) && num_sensors_buf <= 15) {
+                    num_sensors= num_sensors_buf;
                     curr_state= GET_SENSOR;
                 }
                 else {
                     printf("No expected number of sensors.\n");
                     curr_state= READY;
                 }
-                free(num_sensors_buf);
                 break;
             
             case GET_SENSOR:
@@ -87,15 +85,14 @@ void rc_serial_read_loop(race_capture *rc_data) {
                 break;
             
             case GET_END_FLAG:
-                char *end_flag_buf= malloc(1);
-                if (mraa_uart_read(uart_contex, end_flag_buf, 1) && *end_flag_buf == END_FLAG) {
+                char end_flag_buf;
+                if (mraa_uart_read(uart_contex, &end_flag_buf, 1) && end_flag_buf == END_FLAG) {
                     /* thread-safe write of data in tot_sensor_data buffer */
                 }
                 else {
                     printf("No expected end flag.\n");
                     free(tot_sensor_data);
                 }
-                free(end_flag_buf);
                 curr_state= READY;
                 break;
         } 
