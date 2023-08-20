@@ -123,6 +123,7 @@ void sitl_read_byte(void *msg) {        // "crude shadowing function" that works
             break;
         case GET_SENSOR:
             curr_state= GET_END_FLAG;
+            break;
         case GET_END_FLAG:
             if (data == END_FLAG) {
                 curr_state= READY;
@@ -130,6 +131,7 @@ void sitl_read_byte(void *msg) {        // "crude shadowing function" that works
             else {    
                 printf("Message has been compromised: end flag not found (found %d)\n", data);
             }
+            break;
     }
 }
 #endif
