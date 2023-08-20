@@ -6,8 +6,132 @@
 #include <stdio.h>
 #include <string.h>
 
-#ifndef TESTING
 static mraa_uart_context uart_contex;
+static states curr_state;
+
+#ifndef TESTING
+#include "include/racecapture_sitl.h" // for testing function prototypes
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <errno.h>
+#include <time.h>
+
+#define UART 0      // keeping this for when we can test the mraa context directly
+
+static states expected_state;
+curr_state= READY;
+
+int sitl(void) {
+    pid_t child_pid;
+    int status;
+    uint32_t msg;
+    if (curr_state == READY || curr_state == GET_NUM || curr_state == GET_END_FLAG) {
+        msg= generate_onebyte_msg();
+        if (msg == START_FLAG) {
+            if (curr_state == READY) {
+                expected_state= GET_NUM;
+            }
+            else {
+                curr_state= READY;
+            }
+        }
+        else if (msg == END_FLAG) {     // this conditional isn't necessary but is more so for clarity (especially once threading has been implemented)
+            if (curr_state == GET_END_FLAG) {
+                expected_state= READY;
+            }
+            else {
+                curr_state= READY;
+            }
+        }
+        else if (msg <= 15) {
+            if (curr_state == GET_NUM) {
+                expected_state= GET_SENSOR;
+            }
+            else {
+                curr_state= READY;
+            }
+        }
+        else {
+            expected_state= READY;
+        }
+    }
+    else {  
+        msg= generate_fourbyte_msg();
+        expected_state= GET_END_FLAG;
+    }
+
+    child_pid= fork();
+
+    if (child_pid >= 0) { // fork succeeded
+        if (child_pid == 0) { // parent process 
+            wait(&status);
+            /* compares curr state as reported by child process to expected state *
+                and updates expected state */
+            if (curr_state == expected_state) {
+                printf("SUCCESSFUL: Current state matches expected state (%d)\nData read: %d\n\n", curr_state, msg);
+                return sitl();
+            }
+            else {
+                printf("TERMINATED: Current state does not match expected state\nExpected state: %d\nCurrent state: %d\nData read: %d\n\n", expected_state, curr_state, msg);
+            }
+        }
+
+        else { // child process
+            sitl_read_byte(&msg);
+        }
+    }
+    else {
+        perror("Unsuccesful fork\n");
+        return 0;
+    }
+}
+
+uint8_t generate_onebyte_msg(void) {
+    uint8_t arr[]= {START_FLAG, END_FLAG, 12, 34};
+    int r;
+    srand(time(NULL));
+    r= rand() % sizeof(arr); 
+    return *(arr + r);
+}
+
+uint32_t generate_fourbyte_msg(void) {
+    uint32_t r;
+    srand(time(NULL));
+    r= rand() % 16;
+    return r;
+}
+
+void sitl_read_byte(void *msg) {        // "crude shadowing function" that works like rc_serial_read_loop without the infinite loop nor MRAA native functions and structs
+    uint32_t data;
+    if (curr_state == GET_SENSOR) {
+        data= *((uint32_t *) msg);
+    }
+    else {
+        data= *((uint8_t *) msg);
+    }
+    switch (curr_state) {
+        case READY:
+            if (data == START_FLAG) {
+                curr_state= GET_NUM;
+            }
+            break;
+        case GET_NUM:
+            if (data <= 15) {
+                curr_state= GET_SENSOR;
+            }
+            break;
+        case GET_SENSOR:
+            curr_state= GET_END_FLAG;
+        case GET_END_FLAG:
+            if (data == END_FLAG) {
+                curr_state= READY;
+            }
+            else {    
+                printf("Message has been compromised: end flag not found (found %d)\n", data);
+            }
+    }
+}
 #endif
 
 /* Uses libmraa to prepare a serial port for reading
@@ -29,9 +153,9 @@ int rc_serial_init(void) {
  * @author AGA
  */
 void rc_serial_read_loop(race_capture *rc_data) {
-    states curr_state= READY;
     char *tot_sensor_data;
     int num_sensors;
+    curr_state= READY;
 
     for (;;) {
         switch(curr_state) {
@@ -97,10 +221,4 @@ void rc_serial_read_loop(race_capture *rc_data) {
                 break;
         } 
     }
-}
-
-static uint8_t read_byte(void) {
-    #ifdef TESTING
-    return sitl_read_byte();
-    #endif
 }

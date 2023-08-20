@@ -1,7 +1,8 @@
 #include <mraa.h>
+#include "racecapture_sitl.h"
 
 #define S_FLAG 0xF0 
-#define E_FLAG 0xC5
+#define E_FLAG 0xC5 
 
 const float test_reading = 3.545;
 const uint8_t *test_reading_deconstructed = (uint8_t *) &test_reading;
