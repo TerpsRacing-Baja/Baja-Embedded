@@ -6,10 +6,12 @@
 #include <stdio.h>
 #include <string.h>
 
+#define UART 0      // keeping this for when we can test the mraa context directly
+
 static mraa_uart_context uart_contex;
 static states curr_state;
 
-#ifndef TESTING
+#ifdef TESTING
 #include "include/racecapture_sitl.h" // for testing function prototypes
 #include <unistd.h>
 #include <sys/types.h>
@@ -17,10 +19,7 @@ static states curr_state;
 #include <errno.h>
 #include <time.h>
 
-#define UART 0      // keeping this for when we can test the mraa context directly
-
 static states expected_state;
-curr_state= READY;
 
 int sitl(void) {
     pid_t child_pid;
@@ -70,7 +69,7 @@ int sitl(void) {
                 and updates expected state */
             if (curr_state == expected_state) {
                 printf("SUCCESSFUL: Current state matches expected state (%d)\nData read: %d\n\n", curr_state, msg);
-                return sitl();
+                //return sitl();
             }
             else {
                 printf("TERMINATED: Current state does not match expected state\nExpected state: %d\nCurrent state: %d\nData read: %d\n\n", expected_state, curr_state, msg);
@@ -163,7 +162,7 @@ void rc_serial_read_loop(race_capture *rc_data) {
         switch(curr_state) {
             case READY: 
                 char start_flag_buf;
-                if (mraa_uart_read(uart_contex, &start_flag_buf, 1) && start_flag_buf == START_FlAG) {
+                if (mraa_uart_read(uart_contex, &start_flag_buf, 1) && start_flag_buf == START_FLAG) {
                     curr_state= GET_NUM;
                 }
                 else {

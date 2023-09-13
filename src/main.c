@@ -51,7 +51,8 @@ void *start_rc(void *p)
 
     if (init_succeeded)
     {
-        rc_serial_read_loop(args->cm->rc);
+        //rc_serial_read_loop(args->cm->rc);
+        sitl();
     }
     else
         fprintf(stderr, "[RC-THREAD]: UART initialization FAILED .. racecapture thread ended");
@@ -122,6 +123,8 @@ static void *start_fw(void *p)
                 fwrite("\n", 1, 1, logfile);
                 fflush(logfile);
             }
+
+            /* also write message to radio */
 
             free(msg_string);
 
