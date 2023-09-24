@@ -51,11 +51,14 @@ void *start_rc(void *p)
 
     if (init_succeeded)
     {
+        #ifdef TESTING
         //rc_serial_read_loop(args->cm->rc);
         sitl();
+        #endif
     }
-    else
+    else {
         fprintf(stderr, "[RC-THREAD]: UART initialization FAILED .. racecapture thread ended");
+    }
 }
 
 static void *start_fw(void *p)
@@ -125,6 +128,11 @@ static void *start_fw(void *p)
             }
 
             /* also write message to radio */
+            // should be able to do this pretty easily since the radio modules
+            // are actually treated as virtual serial ports, not usb ports
+            // just need to open correct dev file and use some linux builtins to
+            // set baud rate and some other io settings
+            // see: https://github.com/todbot/arduino-serial/tree/main
 
             free(msg_string);
 
