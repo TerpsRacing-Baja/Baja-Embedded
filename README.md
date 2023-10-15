@@ -17,6 +17,8 @@ Individual update functions must be created for every sensor we put on the car. 
 
 All C files have in-line comments describing the granular behavior of functions. For overall explanations of function purposes and behavior, please reference the [include files](src/include/).
 
+[arduino-serial-lib.c](src/arduino-serial-lib.c) and [arduino-serial-lib.h](src/include/arduino-serial-lib.h) are borrowed from the open-source repository [arduino-serial](https://github.com/todbot/arduino-serial/tree/main).
+
 ## Configuration File Format
 
 A sensor configuration file has the following format:
