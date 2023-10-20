@@ -11,9 +11,11 @@
 #include "include/threading.h"
 #include "include/sensors.h"
 #include "include/racecapture_interface.h"
+#include "include/arduino-serial-lib.h"
 
 mraa_i2c_context i2c;
 mraa_gpio_context pin10, pin11, pin12, pin13;
+int serial_fd;
 
 unsigned int r_seed;    // used for reentrant seeding of test sensor value generation
 
@@ -133,9 +135,9 @@ static void *start_fw(void *p)
             // just need to open correct dev file and use some linux builtins to
             // set baud rate and some other io settings
             // see: https://github.com/todbot/arduino-serial/tree/main
+            serialport_write(serial_fd, msg_string);
 
             free(msg_string);
-
         }
 
         nanosleep(&req, NULL);
@@ -199,6 +201,8 @@ int main(void)
 		}
 	#endif
 
+    serial_fd = serialport_init("/dev/ttyMFD1", 115200);
+
     /* read sensor configuration information from config file */
     // TODO: flash config via usb serial (not a code task tho lol)
     config_file = fopen("./configuration", "r");
@@ -241,4 +245,5 @@ int main(void)
     }
 
     free(lock_arr);
+    serialport_close(serial_fd);
 }
