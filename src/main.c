@@ -136,6 +136,7 @@ static void *start_fw(void *p)
             // set baud rate and some other io settings
             // see: https://github.com/todbot/arduino-serial/tree/main
             serialport_write(serial_fd, msg_string);
+            serialport_write(serial_fd, "\n");
 
             free(msg_string);
         }
