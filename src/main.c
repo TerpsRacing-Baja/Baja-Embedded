@@ -202,7 +202,7 @@ int main(void)
 		}
 	#endif
 
-    serial_fd = serialport_init("/dev/ttyACM0", 115200);
+    serial_fd = serialport_init("/dev/ttyACM0", 9600);
 
     /* read sensor configuration information from config file */
     // TODO: flash config via usb serial (not a code task tho lol)
