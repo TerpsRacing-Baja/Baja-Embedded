@@ -154,14 +154,14 @@ int rc_serial_init(void) {
  * @author AGA
  */
 void rc_serial_read_loop(race_capture *rc_data) {
-    char *tot_sensor_data;
-    int num_sensors;
+    char *tot_sensor_data, sensor_buf;
+    int num_sensors, read_unsuccessful, i;
     curr_state= READY;
+    char start_flag_buf, num_sensors_buf, end_flag_buf;
 
     for (;;) {
         switch(curr_state) {
             case READY: 
-                char start_flag_buf;
                 if (mraa_uart_read(uart_contex, &start_flag_buf, 1) && start_flag_buf == START_FLAG) {
                     curr_state= GET_NUM;
                 }
@@ -171,7 +171,6 @@ void rc_serial_read_loop(race_capture *rc_data) {
                 break;
 
             case GET_NUM:
-                char num_sensors_buf;
                 if (mraa_uart_read(uart_contex, &num_sensors_buf, 1) && num_sensors_buf <= 15) {
                     num_sensors= num_sensors_buf;
                     curr_state= GET_SENSOR;
@@ -183,10 +182,6 @@ void rc_serial_read_loop(race_capture *rc_data) {
                 break;
             
             case GET_SENSOR:
-                char *sensor_buf= malloc(4);
-                int read_unsuccessful= 0;
-                int i= 0;
-                tot_sensor_data= malloc(4 * num_sensors);
                 while (i < num_sensors && !read_unsuccessful) {
                     if (mraa_uart_read(uart_contex, sensor_buf, 4) == 4) {
                         strncpy(tot_sensor_data + (i*4), sensor_buf, 4);
@@ -210,7 +205,6 @@ void rc_serial_read_loop(race_capture *rc_data) {
                 break;
             
             case GET_END_FLAG:
-                char end_flag_buf;
                 if (mraa_uart_read(uart_contex, &end_flag_buf, 1) && end_flag_buf == END_FLAG) {
                     /* thread-safe write of data in tot_sensor_data buffer */
                 }

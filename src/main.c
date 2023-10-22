@@ -55,7 +55,7 @@ void *start_rc(void *p)
     {
         #ifdef TESTING
         //rc_serial_read_loop(args->cm->rc);
-        sitl();
+        //sitl();
         #endif
     }
     else {
