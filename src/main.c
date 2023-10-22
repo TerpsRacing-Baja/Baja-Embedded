@@ -137,6 +137,7 @@ static void *start_fw(void *p)
             // see: https://github.com/todbot/arduino-serial/tree/main
             serialport_write(serial_fd, msg_string);
             serialport_write(serial_fd, "\n");
+            serialport_flush(serial_fd);
 
             free(msg_string);
         }
