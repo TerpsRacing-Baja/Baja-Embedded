@@ -66,6 +66,7 @@ void *start_rc(void *p)
 static void *start_fw(void *p)
 {
     int sd_exists;              // set true if there is an sd card
+    int sensor_delay;           // delay between polling each sensor
     char filename[70] = "/mnt"; // name of log file
     FILE *logfile;              // file pointer to logfile
     struct timeval tp;          // timeval struct for holding current time info
@@ -75,8 +76,9 @@ static void *start_fw(void *p)
     args *args = p;
     sensor **sensor_key = args->cm->sensor_key;
 
+    sensor_delay = (SAMPLE_PERIOD + (SAMPLE_PERIOD % args->cm->num_sensors)) / args->cm->num_sensors;
     req.tv_sec = 0;
-    req.tv_nsec = SAMPLE_PERIOD * 1000000L;
+    req.tv_nsec = sensor_delay * 1000000L;
 
     /* do an access and mount sd if it exists */
 	/* open file based on datetime */
@@ -135,14 +137,16 @@ static void *start_fw(void *p)
             // just need to open correct dev file and use some linux builtins to
             // set baud rate and some other io settings
             // see: https://github.com/todbot/arduino-serial/tree/main
-            serialport_write(serial_fd, msg_string);
-            serialport_write(serial_fd, "\n");
-            serialport_flush(serial_fd);
+
+            #ifndef TESTING
+                serialport_write(serial_fd, msg_string);
+                serialport_write(serial_fd, "\n");
+                serialport_flush(serial_fd);
+            #endif
 
             free(msg_string);
+            nanosleep(&req, NULL);
         }
-
-        nanosleep(&req, NULL);
     }
 }
 
